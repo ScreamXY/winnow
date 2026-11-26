@@ -8,6 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		04A86C66BBFA6084B7B346DD /* winnow.js in Resources */ = {isa = PBXBuildFile; fileRef = 2D5B955621928950FCDA6E50 /* winnow.js */; };
+		17DB098FC91EBA487A14B50F /* StoriesStrip.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBFCB63255BD903490EED5C4 /* StoriesStrip.swift */; };
+		1C9C09E2CE104276F0AA6E74 /* BrowserController+Stories.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3054EFAC5D6098393B632E2E /* BrowserController+Stories.swift */; };
+		1D6D9E0B9B9D111522BBF88B /* fixture-home.html in Resources */ = {isa = PBXBuildFile; fileRef = 83487684292FFD75F3D32DCC /* fixture-home.html */; };
 		1E33A7D96BE799505175F977 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = BE56F277CC03BD8AE6E5F4CC /* Settings.bundle */; };
 		2C00AE058F91CA5EDCE705ED /* fixture-feed.html in Resources */ = {isa = PBXBuildFile; fileRef = C7742E86F8BB14E4B0FBC358 /* fixture-feed.html */; };
 		3C840A3C13DB1F65691A1B9B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C8F5E37216EEB9053D81E715 /* Assets.xcassets */; };
@@ -15,6 +18,7 @@
 		5DB400E6E433DD5754860BCF /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 38E5D9937B0280E24B7F3C84 /* PrivacyInfo.xcprivacy */; };
 		8AD8820070C2D806C52FFDB5 /* BrowserController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8C808D7343C7753EA8FA4EE /* BrowserController.swift */; };
 		997C59D7D7A531485F7F3481 /* WinnowApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27BA676877E48CBE75E4FF90 /* WinnowApp.swift */; };
+		A13494631093D249C9ED9633 /* stories.js in Resources */ = {isa = PBXBuildFile; fileRef = 9DCFC80234748C36601AEFCC /* stories.js */; };
 		A38FD1C558937CEDFB67734A /* BrowserController+UI.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED41FE82F9C981B44B53ACAD /* BrowserController+UI.swift */; };
 		B41FE20C4FCF54E44C2F8B5A /* winnow.css in Resources */ = {isa = PBXBuildFile; fileRef = 6D2FE9A9B098D8B748175B1A /* winnow.css */; };
 		BF3E4BDEF2AC4082171E3B31 /* WinnowUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E16FE6264B44446E37785ED1 /* WinnowUITests.swift */; };
@@ -39,9 +43,12 @@
 		07378EC9CE2C7D6FD73EE4F1 /* Winnow.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Winnow.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		27BA676877E48CBE75E4FF90 /* WinnowApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WinnowApp.swift; sourceTree = "<group>"; };
 		2D5B955621928950FCDA6E50 /* winnow.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = winnow.js; sourceTree = "<group>"; };
+		3054EFAC5D6098393B632E2E /* BrowserController+Stories.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BrowserController+Stories.swift"; sourceTree = "<group>"; };
 		38E5D9937B0280E24B7F3C84 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		6D2FE9A9B098D8B748175B1A /* winnow.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = winnow.css; sourceTree = "<group>"; };
 		7FDD9988152EA120B65FBB05 /* UserAgent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserAgent.swift; sourceTree = "<group>"; };
+		83487684292FFD75F3D32DCC /* fixture-home.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = "fixture-home.html"; sourceTree = "<group>"; };
+		9DCFC80234748C36601AEFCC /* stories.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = stories.js; sourceTree = "<group>"; };
 		A8C808D7343C7753EA8FA4EE /* BrowserController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowserController.swift; sourceTree = "<group>"; };
 		B4B614B958D765B53E4F0F72 /* FlickPaging.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlickPaging.swift; sourceTree = "<group>"; };
 		BC1ECD7B9E51214C9E7D0064 /* WinnowUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = WinnowUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -49,6 +56,7 @@
 		BF7D9AE97C6804FCDB9C7A0A /* FilterSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterSettings.swift; sourceTree = "<group>"; };
 		C7742E86F8BB14E4B0FBC358 /* fixture-feed.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = "fixture-feed.html"; sourceTree = "<group>"; };
 		C8F5E37216EEB9053D81E715 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		DBFCB63255BD903490EED5C4 /* StoriesStrip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoriesStrip.swift; sourceTree = "<group>"; };
 		E16FE6264B44446E37785ED1 /* WinnowUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WinnowUITests.swift; sourceTree = "<group>"; };
 		ED41FE82F9C981B44B53ACAD /* BrowserController+UI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BrowserController+UI.swift"; sourceTree = "<group>"; };
 		F893D621371610D0B891DB96 /* RoutePolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutePolicy.swift; sourceTree = "<group>"; };
@@ -59,6 +67,7 @@
 			isa = PBXGroup;
 			children = (
 				C7742E86F8BB14E4B0FBC358 /* fixture-feed.html */,
+				83487684292FFD75F3D32DCC /* fixture-home.html */,
 			);
 			path = Fixtures;
 			sourceTree = "<group>";
@@ -85,8 +94,10 @@
 			isa = PBXGroup;
 			children = (
 				A8C808D7343C7753EA8FA4EE /* BrowserController.swift */,
+				3054EFAC5D6098393B632E2E /* BrowserController+Stories.swift */,
 				ED41FE82F9C981B44B53ACAD /* BrowserController+UI.swift */,
 				07098B9DC9A0BF8DEDDE889D /* DebugProbe.swift */,
+				DBFCB63255BD903490EED5C4 /* StoriesStrip.swift */,
 				27BA676877E48CBE75E4FF90 /* WinnowApp.swift */,
 			);
 			path = App;
@@ -117,6 +128,7 @@
 		9B94D6FF90E6F26CFD3E905C /* Web */ = {
 			isa = PBXGroup;
 			children = (
+				9DCFC80234748C36601AEFCC /* stories.js */,
 				6D2FE9A9B098D8B748175B1A /* winnow.css */,
 				2D5B955621928950FCDA6E50 /* winnow.js */,
 			);
@@ -223,6 +235,8 @@
 				5DB400E6E433DD5754860BCF /* PrivacyInfo.xcprivacy in Resources */,
 				1E33A7D96BE799505175F977 /* Settings.bundle in Resources */,
 				2C00AE058F91CA5EDCE705ED /* fixture-feed.html in Resources */,
+				1D6D9E0B9B9D111522BBF88B /* fixture-home.html in Resources */,
+				A13494631093D249C9ED9633 /* stories.js in Resources */,
 				B41FE20C4FCF54E44C2F8B5A /* winnow.css in Resources */,
 				04A86C66BBFA6084B7B346DD /* winnow.js in Resources */,
 			);
@@ -243,12 +257,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1C9C09E2CE104276F0AA6E74 /* BrowserController+Stories.swift in Sources */,
 				A38FD1C558937CEDFB67734A /* BrowserController+UI.swift in Sources */,
 				8AD8820070C2D806C52FFDB5 /* BrowserController.swift in Sources */,
 				F6BB8831123AF517A98A15C9 /* DebugProbe.swift in Sources */,
 				D3263335C6C8AF375011413F /* FilterSettings.swift in Sources */,
 				DBC55272F175DE0C3EF08381 /* FlickPaging.swift in Sources */,
 				4308D95FDCEE644D94092ED8 /* RoutePolicy.swift in Sources */,
+				17DB098FC91EBA487A14B50F /* StoriesStrip.swift in Sources */,
 				EC8847C80203818C4AEF10B4 /* UserAgent.swift in Sources */,
 				997C59D7D7A531485F7F3481 /* WinnowApp.swift in Sources */,
 			);

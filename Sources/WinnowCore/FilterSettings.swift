@@ -16,6 +16,8 @@ struct FilterSettings: Equatable, Sendable, Codable {
     var hideSponsored = true
     /// Move one post per flick in the home feed.
     var flickMode = true
+    /// Show the stories tray above the Following feed (it loads Instagram's home page in the background).
+    var showStories = true
 
     enum Key {
         static let forceFollowing = "force_following"
@@ -24,6 +26,7 @@ struct FilterSettings: Equatable, Sendable, Codable {
         static let hideSuggestions = "hide_suggestions"
         static let hideSponsored = "hide_sponsored"
         static let flickMode = "flick_mode"
+        static let showStories = "show_stories"
     }
 
     init() {}
@@ -36,6 +39,7 @@ struct FilterSettings: Equatable, Sendable, Codable {
         hideSuggestions = defaults.bool(forKey: Key.hideSuggestions)
         hideSponsored = defaults.bool(forKey: Key.hideSponsored)
         flickMode = defaults.bool(forKey: Key.flickMode)
+        showStories = defaults.bool(forKey: Key.showStories)
     }
 
     static func registrationDefaults() -> [String: Any] {
@@ -47,6 +51,7 @@ struct FilterSettings: Equatable, Sendable, Codable {
             Key.hideSuggestions: fallback.hideSuggestions,
             Key.hideSponsored: fallback.hideSponsored,
             Key.flickMode: fallback.flickMode,
+            Key.showStories: fallback.showStories,
         ]
     }
 

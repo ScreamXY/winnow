@@ -15,6 +15,11 @@ html[data-winnow-hide-reels][data-winnow-route='reels'] main {
   visibility: hidden !important;
 }
 
+/* Room for the stories tray above the first post. The app sets the height and shows the tray there. */
+html[data-winnow-route='home'] [data-winnow-first-post] {
+  margin-top: var(--winnow-stories-space, 0px) !important;
+}
+
 /* Explore: hide the algorithmic grid of posts and reels. The search field stays. */
 html[data-winnow-hide-explore][data-winnow-route='explore'] main a[href*='/p/'],
 html[data-winnow-hide-explore][data-winnow-route='explore'] main a[href*='/reel/'] {

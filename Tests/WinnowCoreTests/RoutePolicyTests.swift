@@ -109,6 +109,7 @@ import Testing
         #expect(!changed.hideSponsored)
         #expect(!changed.flickMode)
         #expect(changed.forceFollowing)
+        #expect(changed.showStories)
     }
 
     @Test func settingsBecomeJavaScript() {

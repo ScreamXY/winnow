@@ -10,7 +10,7 @@
 			<key>Title</key>
 			<string>Feed</string>
 			<key>FooterText</key>
-			<string>Flick mode moves one post per flick in the home feed. Long posts still scroll.</string>
+			<string>Flick mode moves one post per flick in the home feed. Long posts still scroll. The stories tray comes from Instagram&apos;s home page, which loads in the background.</string>
 		</dict>
 		<dict>
 			<key>Type</key>
@@ -29,6 +29,16 @@
 			<string>Flick mode</string>
 			<key>Key</key>
 			<string>flick_mode</string>
+			<key>DefaultValue</key>
+			<true/>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSToggleSwitchSpecifier</string>
+			<key>Title</key>
+			<string>Stories above the feed</string>
+			<key>Key</key>
+			<string>show_stories</string>
 			<key>DefaultValue</key>
 			<true/>
 		</dict>

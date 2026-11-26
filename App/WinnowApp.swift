@@ -33,7 +33,7 @@ struct BrowserScreen: View {
         .onAppear { browser.start() }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active {
-                browser.reloadSettings()
+                browser.appBecameActive()
             }
         }
     }

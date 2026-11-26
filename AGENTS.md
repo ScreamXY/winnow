@@ -15,6 +15,13 @@ flick in the home feed.
   content world. Prefer link targets (`href`) and page structure over class names or visible text.
   Mark nodes with `data-winnow-hidden="<reason>"` and hide them with CSS; never remove nodes.
   Keep language-dependent labels in the lists at the top of the script.
+- Instagram's Following page has no stories tray. `StoriesStrip` loads the home page in a second,
+  small web view and `Web/stories.js` shows only the tray; the main page makes room above the first
+  post (`setStoriesSpace`). The strip must never start a video or make sound, and only story pages
+  and tapped links may go from the strip to the main web view.
+- Never use `devicectl device copy to --remove-existing-content`: it deleted the whole app
+  container on 26 November 2026 (login and settings). `scripts/device-probe.sh` copies a folder
+  without it.
 - `RoutePolicy` decides which pages may load. Keep it in sync with the route names in `winnow.js`.
   Any new redirect needs a unit test and must go through `RedirectGuard`.
 - `Fixtures/fixture-feed.html` is a hand-written test page, not Instagram markup. It is in Debug

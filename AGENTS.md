@@ -40,9 +40,9 @@ Obsidian vault at `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Priva
 Winnow carries the shared rules without the App Store eligibility bullet, because it never goes to
 the App Store. Its Xcode Cloud archive may use **TestFlight (Internal Testing Only)**.
 
-Status (26 November 2026): the repo is ready for TestFlight, but no App Store Connect record,
-internal group or Xcode Cloud workflow exists yet. Release scheme: `Winnow`. App Store Connect name:
-`Winnow Feed` ("Winnow" is taken). Setup steps and status: `docs/TESTFLIGHT.md`.
+Status (26 November 2026): App ID, App Store Connect record "Winnow: Following Feed" (Apple ID
+`6839693814`) and the internal TestFlight group "Internal" exist. No Xcode Cloud workflow and no
+uploaded build yet. Release scheme: `Winnow`. Setup steps and status: `docs/TESTFLIGHT.md`.
 
 - Public support and security contact: `screamcode@gmail.com`. Keep in-app contact details, portal policies and App Store metadata consistent.
 - `AGENTS.md` owns the rules. `CLAUDE.md` contains only: `See @AGENTS.md for monorepo documentation and guidelines.`

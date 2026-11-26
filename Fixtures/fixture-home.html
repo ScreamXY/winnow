@@ -1,0 +1,98 @@
+<!doctype html>
+<!--
+  Hand-written test page for Winnow's stories strip. It is NOT Instagram markup. It only has the
+  parts that Web/stories.js looks for: a row of items labelled as stories near the top, above a
+  feed with a fixed top bar, a video and posts. Debug builds load it with `-WinnowFixture <name>`;
+  Release builds do not contain it.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Winnow home fixture</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #fff;
+        --fg: #111;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #000;
+          --fg: #f2f2f2;
+        }
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--fg);
+        font:
+          13px/16px -apple-system,
+          system-ui,
+          sans-serif;
+      }
+      .top-bar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 44px;
+        background: var(--bg);
+      }
+      main {
+        padding-top: 44px;
+      }
+      .tray {
+        display: flex;
+        gap: 14px;
+        padding: 10px 12px;
+        overflow-x: auto;
+      }
+      .story {
+        flex: none;
+        width: 66px;
+        text-align: center;
+      }
+      .story canvas {
+        width: 62px;
+        height: 62px;
+        border-radius: 50%;
+        background: #d1a33c;
+        display: block;
+        margin: 0 auto 4px;
+      }
+      article {
+        height: 600px;
+        background: #555;
+        margin-top: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="top-bar">Home fixture</div>
+    <main>
+      <div class="tray">
+        <div class="story" role="button" aria-label="Story by tray_one, not seen">
+          <canvas width="62" height="62"></canvas><span>tray_one</span>
+        </div>
+        <div class="story" role="button" aria-label="Story by tray_two, not seen">
+          <canvas width="62" height="62"></canvas><span>tray_two</span>
+        </div>
+        <div class="story" role="button" aria-label="Story by tray_three, seen">
+          <canvas width="62" height="62"></canvas><span>tray_three</span>
+        </div>
+        <div class="story" role="button" aria-label="Story by tray_four, seen">
+          <canvas width="62" height="62"></canvas><span>tray_four</span>
+        </div>
+        <div class="story" role="button" aria-label="Story by tray_five, seen">
+          <canvas width="62" height="62"></canvas><span>tray_five</span>
+        </div>
+      </div>
+      <article>
+        <span>For you post</span>
+        <video muted playsinline loop></video>
+      </article>
+      <article><span>Another for you post</span></article>
+    </main>
+  </body>
+</html>

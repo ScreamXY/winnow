@@ -1,7 +1,7 @@
 import UIKit
 import WebKit
 
-// New windows, camera and microphone requests, and JavaScript dialogs for the Instagram page.
+// New windows, camera and microphone requests, JavaScript dialogs, and messages from the page script.
 
 extension BrowserController: WKUIDelegate {
     /// Links that open a new window (target=_blank, window.open).
@@ -69,6 +69,35 @@ extension BrowserController: WKUIDelegate {
                     continuation.resume(returning: alert?.textFields?.first?.text ?? "")
                 })
             showDialog(alert)
+        }
+    }
+}
+
+// MARK: - Messages from the page script
+
+extension BrowserController {
+    func received(_ body: Any) {
+        guard let message = body as? [String: Any], let type = message["type"] as? String else {
+            return
+        }
+        if type == "layoutChanged" {
+            refreshLayout()
+        }
+        log.debug("Page script: \(type, privacy: .public) \(String(describing: message["route"]), privacy: .public)")
+    }
+}
+
+/// WKUserContentController keeps a strong reference to its handlers. This proxy avoids a retain cycle.
+final class ScriptMessageProxy: NSObject, WKScriptMessageHandler {
+    weak var owner: BrowserController?
+
+    init(owner: BrowserController) {
+        self.owner = owner
+    }
+
+    func userContentController(_ controller: WKUserContentController, didReceive message: WKScriptMessage) {
+        MainActor.assumeIsolated {
+            owner?.received(message.body)
         }
     }
 }

@@ -202,6 +202,36 @@
     if (config.hideReels && currentRoute() === 'reels') {
       document.querySelectorAll('video').forEach((video) => video.pause());
     }
+
+    markFirstPost();
+  };
+
+  // The app shows the stories tray in an empty space above the first visible post.
+  const firstPost = () =>
+    currentRoute() === 'home'
+      ? [...document.querySelectorAll('article')].find(
+          (article) =>
+            !article.closest('[data-winnow-hidden]') &&
+            !(article.parentElement && article.parentElement.closest('article')),
+        ) || null
+      : null;
+
+  const markFirstPost = () => {
+    const first = firstPost();
+    let changed = false;
+    document.querySelectorAll('[data-winnow-first-post]').forEach((element) => {
+      if (element !== first) {
+        element.removeAttribute('data-winnow-first-post');
+        changed = true;
+      }
+    });
+    if (first && !first.hasAttribute('data-winnow-first-post')) {
+      first.setAttribute('data-winnow-first-post', '');
+      changed = true;
+    }
+    if (changed) {
+      post({ type: 'layoutChanged' });
+    }
   };
 
   let scanTimer = null;
@@ -267,12 +297,28 @@
       });
     }
     const insets = chromeInsets();
+    const first = document.querySelector('[data-winnow-first-post]');
+    let stories = null;
+    if (route === 'home' && first) {
+      const rect = first.getBoundingClientRect();
+      const space = parseFloat(getComputedStyle(first).marginTop) || 0;
+      stories = { top: rect.top + window.scrollY - space, left: rect.left, width: rect.width };
+    }
     return JSON.stringify({
       route,
       posts,
       topInset: insets.top,
       bottomInset: insets.bottom,
+      stories,
     });
+  };
+
+  // Makes room for the stories tray above the first post. Returns the new layout.
+  const setStoriesSpace = (height) => {
+    const pixels = Math.max(0, Math.round(Number(height) || 0));
+    document.documentElement.style.setProperty('--winnow-stories-space', pixels + 'px');
+    markFirstPost();
+    return layout();
   };
 
   const configure = (next) => {
@@ -280,7 +326,7 @@
     scan();
   };
 
-  window.__winnow = { configure, layout, scan, version: 1 };
+  window.__winnow = { configure, layout, scan, setStoriesSpace, version: 1 };
 
   const start = () => {
     scan();

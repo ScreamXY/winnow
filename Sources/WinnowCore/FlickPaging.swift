@@ -16,6 +16,15 @@ struct FeedLayout: Equatable, Sendable, Decodable {
     var topInset: Double
     /// Height of the fixed bar at the bottom of the page (0 if there is none).
     var bottomInset: Double
+    /// The empty space above the first post where the app shows the stories tray, if any.
+    var stories: StoriesSlot?
+
+    /// Page position and width of the stories space, in CSS pixels.
+    struct StoriesSlot: Equatable, Sendable, Decodable {
+        var top: Double
+        var left: Double
+        var width: Double
+    }
 }
 
 /// Flick mode: one flick moves exactly one post, like the full-screen feed that Instagram

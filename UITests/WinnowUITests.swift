@@ -87,6 +87,23 @@ final class WinnowUITests: XCTestCase {
     }
 
     @MainActor
+    func testStoriesTraySitsAboveTheFirstPostAndScrollsAway() {
+        let web = launch()
+        let story = XCUIApplication().buttons["Story by tray_one, not seen"]
+        XCTAssertTrue(story.waitForExistence(timeout: 20), "The tray did not appear")
+        let placed = NSPredicate(format: "isHittable == true")
+        expectation(for: placed, evaluatedWith: story)
+        waitForExpectations(timeout: 10)
+        let firstPost = web.staticTexts["Post 1 by friend_one"]
+        // The tray sits in the room above the first post, not on top of it.
+        XCTAssertLessThanOrEqual(story.frame.maxY, firstPost.frame.minY)
+
+        web.swipeUp(velocity: .fast)
+        waitForScrollToStop()
+        XCTAssertFalse(story.isHittable, "The tray should scroll away with the feed")
+    }
+
+    @MainActor
     private func assertPost(
         _ title: String, isBelow barBottom: CGFloat, in web: XCUIElement, line: UInt = #line
     ) {

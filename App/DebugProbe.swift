@@ -9,6 +9,7 @@
     ///    (`xcrun devicectl device copy to --domain-type appDataContainer
     ///    --domain-identifier com.screamxy.winnow …`). The script runs in Winnow's script world as
     ///    the body of an async function, so it can `return` a value.
+    ///    `request-strip.js` runs in the stories strip instead.
     /// 2. Copy back `Documents/probe/response.json`. It holds the value (or the error) and the
     ///    native scroll state, including the last flick mode decisions.
     ///
@@ -17,12 +18,14 @@
     @MainActor
     final class DebugProbe {
         private weak var webView: WKWebView?
+        private weak var strip: WKWebView?
         private let nativeState: () -> [String: Any]
         private let folder = URL.documentsDirectory.appending(path: "probe", directoryHint: .isDirectory)
         private var timer: Timer?
 
-        init(webView: WKWebView, nativeState: @escaping () -> [String: Any]) {
+        init(webView: WKWebView, strip: WKWebView?, nativeState: @escaping () -> [String: Any]) {
             self.webView = webView
+            self.strip = strip
             self.nativeState = nativeState
             timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
                 MainActor.assumeIsolated {
@@ -40,7 +43,12 @@
             let request = folder.appending(path: "request.js")
             if let script = try? String(contentsOf: request, encoding: .utf8) {
                 try? FileManager.default.removeItem(at: request)
-                run(script)
+                run(script, in: webView)
+            }
+            let stripRequest = folder.appending(path: "request-strip.js")
+            if let script = try? String(contentsOf: stripRequest, encoding: .utf8) {
+                try? FileManager.default.removeItem(at: stripRequest)
+                run(script, in: strip)
             }
             let snapshot = folder.appending(path: "snapshot.request")
             if FileManager.default.fileExists(atPath: snapshot.path()) {
@@ -49,8 +57,8 @@
             }
         }
 
-        private func run(_ script: String) {
-            webView?.callAsyncJavaScript(script, arguments: [:], in: nil, in: .defaultClient) { [weak self] result in
+        private func run(_ script: String, in target: WKWebView?) {
+            target?.callAsyncJavaScript(script, arguments: [:], in: nil, in: .defaultClient) { [weak self] result in
                 guard let self else {
                     return
                 }

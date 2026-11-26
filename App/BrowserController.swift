@@ -6,6 +6,7 @@ import WebKit
 /// - `RoutePolicy` decides which pages may load (Following feed, no reels feed, outside links).
 /// - `Web/winnow.js` hides things inside a page.
 /// - `FlickPaging` moves one post per flick in the home feed.
+/// - `StoriesStrip` shows the stories tray above the Following feed (`BrowserController+Stories.swift`).
 @MainActor
 @Observable
 final class BrowserController: NSObject {
@@ -16,13 +17,16 @@ final class BrowserController: NSObject {
 
     @ObservationIgnored let webView: WKWebView
     @ObservationIgnored private(set) var settings: FilterSettings
-    @ObservationIgnored private var layout: FeedLayout?
+    @ObservationIgnored var layout: FeedLayout?
+    @ObservationIgnored let stories: StoriesStrip
+    /// True after a story opened from the tray, so the tray reloads (seen rings) on return.
+    @ObservationIgnored var visitedStories = false
     @ObservationIgnored private var redirectGuard = RedirectGuard()
     @ObservationIgnored private var urlObservation: NSKeyValueObservation?
     @ObservationIgnored private var backgroundObservation: NSKeyValueObservation?
     @ObservationIgnored private var hasStarted = false
     @ObservationIgnored private let refreshControl = UIRefreshControl()
-    @ObservationIgnored private let log = Logger(subsystem: "com.screamxy.winnow", category: "browser")
+    @ObservationIgnored let log = Logger(subsystem: "com.screamxy.winnow", category: "browser")
     #if DEBUG
         @ObservationIgnored private var probe: DebugProbe?
         @ObservationIgnored private var flickLog: [[String: Any]] = []
@@ -38,7 +42,9 @@ final class BrowserController: NSObject {
             isPad: UIDevice.current.userInterfaceIdiom == .pad,
             systemVersion: UIDevice.current.systemVersion)
         webView = WKWebView(frame: .zero, configuration: configuration)
+        stories = StoriesStrip(applicationName: configuration.applicationNameForUserAgent)
         super.init()
+        setUpStories()
 
         let content = configuration.userContentController
         content.add(ScriptMessageProxy(owner: self), contentWorld: .defaultClient, name: "winnow")
@@ -53,7 +59,11 @@ final class BrowserController: NSObject {
         webView.isOpaque = false
         webView.backgroundColor = .systemBackground
         webView.scrollView.backgroundColor = .systemBackground
-        refreshControl.addAction(UIAction { [weak self] _ in self?.webView.reload() }, for: .valueChanged)
+        refreshControl.addAction(
+            UIAction { [weak self] _ in
+                self?.webView.reload()
+                self?.reloadStories()
+            }, for: .valueChanged)
         webView.scrollView.refreshControl = refreshControl
 
         // Instagram changes pages without a full load (history.pushState). The URL still changes.
@@ -68,7 +78,7 @@ final class BrowserController: NSObject {
             }
         }
         #if DEBUG
-            probe = DebugProbe(webView: webView) { [weak self] in self?.debugState() ?? [:] }
+            probe = DebugProbe(webView: webView, strip: stories.webView) { [weak self] in self?.debugState() ?? [:] }
         #endif
     }
 
@@ -79,6 +89,7 @@ final class BrowserController: NSObject {
             return
         }
         hasStarted = true
+        reloadStories()
         #if DEBUG
             if let html = Self.fixtureHTML() {
                 // A hand-written test page. The base URL makes the page script treat it as Instagram.
@@ -112,8 +123,16 @@ final class BrowserController: NSObject {
         }
     }
 
-    /// Reads the Settings app values again. Called when the app becomes active.
-    func reloadSettings() {
+    /// Called when the app comes to the front.
+    func appBecameActive() {
+        reloadSettings()
+        if storiesEnabled {
+            stories.reloadIfOlder(than: 300)
+        }
+    }
+
+    /// Reads the Settings app values again.
+    private func reloadSettings() {
         let fresh = FilterSettings(defaults: .standard)
         guard fresh != settings else {
             return
@@ -125,6 +144,7 @@ final class BrowserController: NSObject {
             arguments: ["config": fresh.javaScriptLiteral()], in: nil, in: .defaultClient
         ) { _ in }
         pageAddressChanged(webView.url)
+        storiesSettingsChanged()
     }
 
     // MARK: - Page script
@@ -167,6 +187,7 @@ final class BrowserController: NSObject {
         if case .redirect(let target) = decision, target != url {
             redirect(to: target)
         }
+        storiesAddressChanged(url)
     }
 
     /// Returns false if the redirect was skipped to stop a loop.
@@ -184,13 +205,9 @@ final class BrowserController: NSObject {
         UIApplication.shared.open(url)
     }
 
-    // MARK: - Flick mode
+    // MARK: - Feed layout (flick mode and the stories tray)
 
-    private func refreshLayout() {
-        guard settings.flickMode else {
-            layout = nil
-            return
-        }
+    func refreshLayout() {
         webView.callAsyncJavaScript(
             "return window.__winnow ? window.__winnow.layout() : null", arguments: [:], in: nil, in: .defaultClient
         ) { [weak self] result in
@@ -198,6 +215,7 @@ final class BrowserController: NSObject {
                 return
             }
             layout = try? JSONDecoder().decode(FeedLayout.self, from: Data(json.utf8))
+            placeStories()
         }
     }
 
@@ -244,6 +262,11 @@ extension BrowserController: WKNavigationDelegate {
         isLoadingFirstPage = false
         loadError = nil
         refreshControl.endRefreshing()
+        // A full load resets the room for the tray. After a login, the tray may load now.
+        applyStoriesSpace()
+        if storiesEnabled, stories.trayHeight == 0 {
+            stories.reloadIfOlder(than: 10)
+        }
     }
 
     func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
@@ -276,6 +299,10 @@ extension BrowserController: WKNavigationDelegate {
 // MARK: - UIScrollViewDelegate (flick mode)
 
 extension BrowserController: UIScrollViewDelegate {
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        placeStories()
+    }
+
     func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
         // A fast stop makes one flick feel like one step. Other pages keep normal scrolling.
         let flicking = settings.flickMode && layout?.route == "home"
@@ -350,29 +377,3 @@ extension BrowserController: UIScrollViewDelegate {
         }
     }
 #endif
-
-// MARK: - Messages from the page script
-
-extension BrowserController {
-    fileprivate func received(_ body: Any) {
-        guard let message = body as? [String: Any], let type = message["type"] as? String else {
-            return
-        }
-        log.debug("Page script: \(type, privacy: .public) \(String(describing: message["route"]), privacy: .public)")
-    }
-}
-
-/// WKUserContentController keeps a strong reference to its handlers. This proxy avoids a retain cycle.
-private final class ScriptMessageProxy: NSObject, WKScriptMessageHandler {
-    weak var owner: BrowserController?
-
-    init(owner: BrowserController) {
-        self.owner = owner
-    }
-
-    func userContentController(_ controller: WKUserContentController, didReceive message: WKScriptMessage) {
-        MainActor.assumeIsolated {
-            owner?.received(message.body)
-        }
-    }
-}

@@ -27,14 +27,19 @@ final class WinnowUITests: XCTestCase {
         XCTAssertFalse(web.staticTexts["Suggested for you"].exists)
         XCTAssertFalse(web.links["See all"].exists)
         XCTAssertFalse(web.links["Open app"].exists)
+        // The back arrow in the title leads to the "For you" feed, which Winnow never shows.
+        XCTAssertFalse(web.images["Back"].exists)
         XCTAssertFalse(web.staticTexts["Post 4 by brand_account"].exists)
         XCTAssertTrue(web.staticTexts["Post 3 by friend_three"].exists)
     }
 
     @MainActor
     func testSwitchesInSettingsChangeWhatIsHidden() {
-        let web = launch(["-hide_sponsored", "NO", "-hide_reels", "NO", "-hide_suggestions", "NO"])
+        let web = launch([
+            "-hide_sponsored", "NO", "-hide_reels", "NO", "-hide_suggestions", "NO", "-force_following", "NO",
+        ])
         XCTAssertTrue(web.staticTexts["Post 4 by brand_account"].exists)
+        XCTAssertTrue(web.images["Back"].exists)
         XCTAssertTrue(web.links["Reels"].exists)
         XCTAssertTrue(web.staticTexts["Suggested for you"].exists)
     }
@@ -48,6 +53,11 @@ final class WinnowUITests: XCTestCase {
         // The top bar is 56 points high and the title is centred in it.
         let barBottom = brand.frame.midY + 28
 
+        waitForTray()
+
+        // From the top (stories), the first flick shows post 1 and never skips it.
+        web.swipeUp(velocity: .fast)
+        assertPost("Post 1 by friend_one", isBelow: barBottom, in: web)
         web.swipeUp(velocity: .fast)
         assertPost("Post 2 by friend_two", isBelow: barBottom, in: web)
         web.swipeUp(velocity: .fast)
@@ -61,6 +71,8 @@ final class WinnowUITests: XCTestCase {
         try XCTSkipIf(UIDevice.current.userInterfaceIdiom == .pad, "The phone layout has the bars this test measures.")
         let web = launch()
         let barBottom = web.staticTexts["Fixture feed"].frame.midY + 28
+        waitForTray()
+        web.swipeUp(velocity: .fast)
         web.swipeUp(velocity: .fast)
         assertPost("Post 2 by friend_two", isBelow: barBottom, in: web)
         // Drag a little and stop before lifting the finger: the feed goes back to the post start.
@@ -104,6 +116,38 @@ final class WinnowUITests: XCTestCase {
     }
 
     @MainActor
+    func testStoriesTrayScrollsSideways() {
+        _ = launch()
+        let first = XCUIApplication().buttons["Story by tray_one, not seen"]
+        XCTAssertTrue(first.waitForExistence(timeout: 20), "The tray did not appear")
+        XCTAssertTrue(wait { first.isHittable }, "The tray is not placed")
+        let last = XCUIApplication().buttons["Story by tray_twelve, seen"]
+        XCTAssertFalse(last.isHittable, "The last story should start off screen")
+
+        for _ in 0..<3 where !last.isHittable {
+            first.swipeLeft(velocity: .fast)
+            waitForScrollToStop()
+        }
+        XCTAssertTrue(last.isHittable, "The tray did not scroll sideways")
+    }
+
+    @MainActor
+    func testStoriesTrayHidesWhileADialogIsOpen() {
+        let web = launch()
+        let story = XCUIApplication().buttons["Story by tray_one, not seen"]
+        XCTAssertTrue(story.waitForExistence(timeout: 20), "The tray did not appear")
+        XCTAssertTrue(wait { story.exists && story.isHittable }, "The tray is not placed")
+
+        // The tray is a native view above the page. It must not cover Instagram's menus and sheets.
+        web.buttons["More options"].tap()
+        XCTAssertTrue(web.buttons["Cancel"].waitForExistence(timeout: 5))
+        XCTAssertTrue(wait { !story.exists || !story.isHittable }, "The tray covers the dialog")
+
+        web.buttons["Cancel"].tap()
+        XCTAssertTrue(wait { story.exists && story.isHittable }, "The tray did not come back")
+    }
+
+    @MainActor
     private func assertPost(
         _ title: String, isBelow barBottom: CGFloat, in web: XCUIElement, line: UInt = #line
     ) {
@@ -117,5 +161,25 @@ final class WinnowUITests: XCTestCase {
 
     private func waitForScrollToStop() {
         RunLoop.current.run(until: Date().addingTimeInterval(1.5))
+    }
+
+    /// Waits until the stories tray is placed above the feed, so every test starts from the same page.
+    @MainActor
+    private func waitForTray() {
+        let story = XCUIApplication().buttons["Story by tray_one, not seen"]
+        XCTAssertTrue(story.waitForExistence(timeout: 20), "The tray did not appear")
+        XCTAssertTrue(wait { story.isHittable }, "The tray is not placed")
+    }
+
+    /// Checks `condition` again and again until it is true or the time is up.
+    private func wait(timeout: TimeInterval = 10, until condition: () -> Bool) -> Bool {
+        let end = Date().addingTimeInterval(timeout)
+        while Date() < end {
+            if condition() {
+                return true
+            }
+            RunLoop.current.run(until: Date().addingTimeInterval(0.25))
+        }
+        return condition()
     }
 }

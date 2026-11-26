@@ -16,9 +16,16 @@ flick in the home feed.
   Mark nodes with `data-winnow-hidden="<reason>"` and hide them with CSS; never remove nodes.
   Keep language-dependent labels in the lists at the top of the script.
 - Instagram's Following page has no stories tray. `StoriesStrip` loads the home page in a second,
-  small web view and `Web/stories.js` shows only the tray; the main page makes room above the first
-  post (`setStoriesSpace`). The strip must never start a video or make sound, and only story pages
-  and tapped links may go from the strip to the main web view.
+  small web view and `Web/stories.js` shows only the tray; the main page makes room above the list
+  of posts (`setStoriesSpace`, a margin on `[data-winnow-feed]`). Never put the room on a post:
+  Instagram removes posts far above the screen, and the room would move down the feed. The strip
+  must never start a video or make sound, and only story pages and tapped links may go from the
+  strip to the main web view. A tapped story opens in `StoryViewer` above the feed, so the feed
+  keeps its place.
+- The strip loads only after login and only while the main web view shows the feed
+  (`StoriesPolicy`). Both web views share one cookie store: a load of Instagram while logged out
+  replaces the `csrftoken` cookie, and the login form then fails. Check the login by the name of
+  the `sessionid` cookie only; never read cookie values.
 - Never use `devicectl device copy to --remove-existing-content`: it deleted the whole app
   container on 26 November 2026 (login and settings). `scripts/device-probe.sh` copies a folder
   without it.

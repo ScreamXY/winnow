@@ -3,7 +3,11 @@ import WebKit
 
 /// The stories tray above the Following feed. Instagram's Following page has no tray, so a second,
 /// small web view loads the home page, and `Web/stories.js` shows only its tray. Both web views
-/// share the login (same website data store). A tap on a story opens it in the main web view.
+/// share the login (same website data store). A tap on a story opens it above the feed
+/// (`StoryViewer`); other tapped links open in the main web view.
+///
+/// The strip loads only when `mayLoad` agrees (see `StoriesPolicy`): a load while the person is
+/// logged out changes the shared `csrftoken` cookie and breaks the login in the main web view.
 @MainActor
 final class StoriesStrip: NSObject {
     /// Sits inside the main web view and clips the strip below Instagram's top bar.
@@ -13,8 +17,13 @@ final class StoriesStrip: NSObject {
     private(set) var trayHeight: CGFloat = 0
     /// Called when the tray height changes.
     var onTrayHeight: ((CGFloat) -> Void)?
-    /// Called with an address that belongs in the main web view, such as a story.
+    /// Called with a tapped address, such as a story. The app decides where it opens.
     var onOpen: ((URL) -> Void)?
+    /// How often iOS ended the strip's process (usually low memory).
+    private(set) var processTerminations = 0
+    /// Asked before every load. Returns false while a load is not safe (logged out, or the main
+    /// web view is not on the feed).
+    var mayLoad: (@MainActor () async -> Bool)?
 
     private var urlObservation: NSKeyValueObservation?
     private var lastLoad = Date.distantPast
@@ -59,16 +68,26 @@ final class StoriesStrip: NSObject {
         }
     }
 
-    /// Loads Instagram's home page, which has the tray.
+    /// Loads Instagram's home page, which has the tray, when `mayLoad` agrees. Otherwise the strip
+    /// stays empty.
     func load() {
-        lastLoad = .now
-        #if DEBUG
-            if let html = Self.fixtureHTML() {
-                webView.loadHTMLString(html, baseURL: RoutePolicy.home)
+        Task { [weak self] in
+            guard let self else {
                 return
             }
-        #endif
-        webView.load(URLRequest(url: RoutePolicy.home))
+            guard await mayLoad?() ?? false else {
+                clear()
+                return
+            }
+            lastLoad = .now
+            #if DEBUG
+                if let html = Self.fixtureHTML() {
+                    webView.loadHTMLString(html, baseURL: RoutePolicy.home)
+                    return
+                }
+            #endif
+            webView.load(URLRequest(url: RoutePolicy.home))
+        }
     }
 
     /// Reloads when the tray is older than `age`, so new stories and seen rings show up.
@@ -78,15 +97,33 @@ final class StoriesStrip: NSObject {
         }
     }
 
+    /// Empties the strip, so no Instagram page runs in it, and removes the tray.
+    private func clear() {
+        lastLoad = .distantPast
+        if let url = webView.url, url.scheme == "https" {
+            webView.stopLoading()
+            webView.loadHTMLString("", baseURL: nil)
+        }
+        guard trayHeight != 0 else {
+            return
+        }
+        trayHeight = 0
+        onTrayHeight?(0)
+    }
+
     /// Places the strip. All values are in the main web view's coordinates.
     /// - Parameters:
     ///   - frame: Where the tray belongs on screen (its top moves while the feed scrolls).
     ///   - clipTop: The bottom edge of Instagram's top bar; the strip is hidden above it.
     ///   - bounds: The main web view's bounds.
     func place(frame: CGRect?, clipTop: CGFloat, in bounds: CGRect) {
-        guard let frame, trayHeight > 0 else {
+        // Hidden while there is no tray, and while the tray is fully under Instagram's top bar or below
+        // the screen: then nobody can see it, and VoiceOver must not find it either.
+        guard let frame, trayHeight > 0, frame.maxY > clipTop, frame.minY < bounds.height else {
             container.isHidden = true
-            webView.frame = CGRect(x: 0, y: 0, width: bounds.width, height: searchHeight)
+            if frame == nil || trayHeight == 0 {
+                webView.frame = CGRect(x: 0, y: 0, width: bounds.width, height: searchHeight)
+            }
             return
         }
         container.isHidden = false
@@ -104,7 +141,8 @@ final class StoriesStrip: NSObject {
         if webView.canGoBack {
             webView.goBack()
         } else {
-            load()
+            // The tray loads again when the person comes back to the feed.
+            clear()
         }
     }
 
@@ -167,6 +205,7 @@ extension StoriesStrip: WKNavigationDelegate {
     }
 
     func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
+        processTerminations += 1
         load()
     }
 }

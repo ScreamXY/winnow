@@ -97,6 +97,7 @@
     setFlag('data-winnow-hide-explore', config.hideExplore);
     setFlag('data-winnow-hide-suggestions', config.hideSuggestions);
     setFlag('data-winnow-hide-sponsored', config.hideSponsored);
+    setFlag('data-winnow-force-following', config.forceFollowing);
   };
 
   const ensureStyle = () => {
@@ -203,30 +204,86 @@
       document.querySelectorAll('video').forEach((video) => video.pause());
     }
 
-    markFirstPost();
+    // The title of the Following feed is a link back to the "For you" feed, with a back arrow (in the
+    // top bar on a phone, above the posts on an iPad). Winnow never shows that feed: a tap on the
+    // title scrolls to the top (see the click handler), so the arrow is hidden.
+    const backArrows =
+      currentRoute() === 'home' ? document.querySelectorAll('a[href="/?variant=home"] svg') : [];
+    backArrows.forEach((svg) => {
+      const wrapper = svg.parentElement;
+      const onlyChild = wrapper && wrapper.children.length === 1 && !wrapper.matches('a');
+      mark(onlyChild ? wrapper : svg, 'back');
+    });
+
+    markFeed();
   };
 
-  // The app shows the stories tray in an empty space above the first visible post.
-  const firstPost = () =>
-    currentRoute() === 'home'
-      ? [...document.querySelectorAll('article')].find(
-          (article) =>
-            !article.closest('[data-winnow-hidden]') &&
-            !(article.parentElement && article.parentElement.closest('article')),
-        ) || null
-      : null;
+  const topLevelArticles = () =>
+    [...document.querySelectorAll('article')].filter(
+      (article) => !(article.parentElement && article.parentElement.closest('article')),
+    );
 
-  const markFirstPost = () => {
-    const first = firstPost();
+  // The app shows the stories tray in a room above the feed. The room is a margin on the list that
+  // holds the posts, not on the first post: Instagram keeps only a few posts in the page and
+  // removes the ones far above the screen, so the first post in the page is often not the first
+  // post of the feed.
+  const feedList = () => {
+    if (currentRoute() !== 'home') return null;
+    const articles = topLevelArticles();
+    if (articles.length === 0) return null;
+    let list = articles[0].parentElement;
+    const last = articles[articles.length - 1];
+    while (list && !list.contains(last)) {
+      list = list.parentElement;
+    }
+    return list && list !== document.body && list !== document.documentElement ? list : null;
+  };
+
+  // A dialog (a menu or a sheet) covers the page. The stories tray is a native view above the page,
+  // so the app hides it while a dialog is open.
+  const isDialogOpen = () =>
+    [...document.querySelectorAll('[role="dialog"], [aria-modal="true"], dialog[open]')].some(
+      (element) => {
+        const rect = element.getBoundingClientRect();
+        return (
+          rect.width > 0 && rect.height > 0 && getComputedStyle(element).visibility !== 'hidden'
+        );
+      },
+    );
+  let dialogWasOpen = false;
+  // Where the room for the tray was last reported. Content above the feed can change size (for
+  // example when the back arrow is hidden), and then the app must place the tray again.
+  let lastRoomTop = null;
+
+  const roomOf = (list) => {
+    if (!list) return null;
+    const rect = list.getBoundingClientRect();
+    const space = parseFloat(getComputedStyle(list).marginTop) || 0;
+    return { top: rect.top + window.scrollY - space, left: rect.left, width: rect.width };
+  };
+
+  const markFeed = () => {
+    const list = feedList();
     let changed = false;
-    document.querySelectorAll('[data-winnow-first-post]').forEach((element) => {
-      if (element !== first) {
-        element.removeAttribute('data-winnow-first-post');
+    const dialogOpen = isDialogOpen();
+    if (dialogOpen !== dialogWasOpen) {
+      dialogWasOpen = dialogOpen;
+      changed = true;
+    }
+    document.querySelectorAll('[data-winnow-feed]').forEach((element) => {
+      if (element !== list) {
+        element.removeAttribute('data-winnow-feed');
         changed = true;
       }
     });
-    if (first && !first.hasAttribute('data-winnow-first-post')) {
-      first.setAttribute('data-winnow-first-post', '');
+    if (list && !list.hasAttribute('data-winnow-feed')) {
+      list.setAttribute('data-winnow-feed', '');
+      changed = true;
+    }
+    const room = roomOf(list);
+    const roomTop = room ? Math.round(room.top) : null;
+    if (roomTop !== lastRoomTop) {
+      lastRoomTop = roomTop;
       changed = true;
     }
     if (changed) {
@@ -288,8 +345,7 @@
     const route = currentRoute();
     const posts = [];
     if (route === 'home') {
-      document.querySelectorAll('article').forEach((article) => {
-        if (article.parentElement && article.parentElement.closest('article')) return;
+      topLevelArticles().forEach((article) => {
         const rect = article.getBoundingClientRect();
         if (rect.height > 40) {
           posts.push({ top: rect.top + window.scrollY, height: rect.height });
@@ -297,27 +353,23 @@
       });
     }
     const insets = chromeInsets();
-    const first = document.querySelector('[data-winnow-first-post]');
-    let stories = null;
-    if (route === 'home' && first) {
-      const rect = first.getBoundingClientRect();
-      const space = parseFloat(getComputedStyle(first).marginTop) || 0;
-      stories = { top: rect.top + window.scrollY - space, left: rect.left, width: rect.width };
-    }
+    const stories = route === 'home' ? roomOf(document.querySelector('[data-winnow-feed]')) : null;
     return JSON.stringify({
       route,
       posts,
       topInset: insets.top,
       bottomInset: insets.bottom,
       stories,
+      dialogOpen: isDialogOpen(),
     });
   };
 
-  // Makes room for the stories tray above the first post. Returns the new layout.
+  // Makes room for the stories tray above the feed. Returns the new layout.
   const setStoriesSpace = (height) => {
     const pixels = Math.max(0, Math.round(Number(height) || 0));
     document.documentElement.style.setProperty('--winnow-stories-space', pixels + 'px');
-    markFirstPost();
+    setFlag('data-winnow-stories', pixels > 0);
+    markFeed();
     return layout();
   };
 

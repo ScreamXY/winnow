@@ -62,7 +62,7 @@ Winnow is for personal use. It is not on the App Store and it is not planned: Ap
 very likely reject an app that wraps another company's website (guidelines 4.2 and 5.2.2).
 
 - **TestFlight (internal):** every push to `main` builds the app in Xcode Cloud and sends it to the
-  internal TestFlight group. Internal testing needs no App Review. Builds expire after 90 days. The
+  internal TestFlight group ("Winnow: Following Feed" in TestFlight). Internal testing needs no App Review. Builds expire after 90 days. The
   one-time setup is in [`docs/TESTFLIGHT.md`](docs/TESTFLIGHT.md).
 - **From Xcode:** open `Winnow.xcodeproj`, choose your iPhone or iPad and press Run. With a paid
   developer account the install lasts up to one year. Xcode installs are called "Winnow Dev".

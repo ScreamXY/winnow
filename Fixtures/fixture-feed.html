@@ -1,0 +1,249 @@
+<!doctype html>
+<!--
+  Hand-written test page for Winnow. It is NOT Instagram markup. It only copies the hooks the
+  page script relies on: link targets (/reels/, /explore/people/), <main>, <article>, fixed bars,
+  and the "Suggested for you" and "Sponsored" labels. Debug builds load it with
+  `-WinnowFixture feed`; Release builds do not contain it.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Winnow fixture</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #fff;
+        --fg: #111;
+        --line: #ddd;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #000;
+          --fg: #f2f2f2;
+          --line: #333;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--fg);
+        font:
+          15px/20px -apple-system,
+          system-ui,
+          sans-serif;
+      }
+      a {
+        color: inherit;
+      }
+      .top-bar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 56px;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 12px;
+        background: var(--bg);
+        border-bottom: 1px solid var(--line);
+      }
+      .top-bar .brand {
+        font-weight: 700;
+        line-height: 56px;
+      }
+      .bottom-bar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 50px;
+        z-index: 2;
+        display: flex;
+        background: var(--bg);
+        border-top: 1px solid var(--line);
+      }
+      .bottom-bar > div {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .side-bar {
+        display: none;
+      }
+      main {
+        padding: 56px 0 50px;
+        max-width: 470px;
+        margin: 0 auto;
+      }
+      .stories {
+        height: 100px;
+        display: flex;
+        gap: 12px;
+        padding: 12px;
+        overflow-x: auto;
+      }
+      .story {
+        flex: none;
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: #c9a24a;
+      }
+      article {
+        border-bottom: 1px solid var(--line);
+      }
+      article header {
+        height: 48px;
+        padding: 0 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .media {
+        aspect-ratio: 1;
+      }
+      .media.tall {
+        aspect-ratio: 9 / 20;
+      }
+      .actions {
+        height: 44px;
+        padding: 0 12px;
+        display: flex;
+        align-items: center;
+      }
+      .caption {
+        margin: 0;
+        padding: 0 12px 16px;
+      }
+      .suggested {
+        padding: 16px 12px;
+        border-bottom: 1px solid var(--line);
+      }
+      @media (min-width: 768px) {
+        .top-bar,
+        .bottom-bar {
+          display: none;
+        }
+        .side-bar {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          position: fixed;
+          top: 0;
+          bottom: 0;
+          left: 0;
+          width: 220px;
+          padding: 24px 12px;
+          border-right: 1px solid var(--line);
+        }
+        main {
+          padding: 24px 0;
+          margin-left: max(240px, calc(50% - 235px));
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="top-bar">
+      <span class="brand">Fixture feed</span>
+      <a href="https://apps.apple.com/app/id1">Open app</a>
+      <a href="/direct/inbox/" aria-label="Messages">✉︎</a>
+    </div>
+
+    <div class="side-bar">
+      <div><a href="/" aria-label="Home">Home</a></div>
+      <div><a href="/explore/" aria-label="Explore">Explore</a></div>
+      <div>
+        <div><a href="/reels/" aria-label="Reels">Reels</a></div>
+      </div>
+      <div><a href="/direct/inbox/" aria-label="Messages">Messages</a></div>
+      <div><a href="/friend_me/" aria-label="Profile">Profile</a></div>
+    </div>
+
+    <main>
+      <div class="stories">
+        <div class="story"></div>
+        <div class="story"></div>
+        <div class="story"></div>
+      </div>
+
+      <article>
+        <header><span>Post 1 by friend_one</span></header>
+        <div class="media" style="background: #4a7c8c"></div>
+        <div class="actions">♡ 💬</div>
+        <p class="caption">First post from someone I follow.</p>
+      </article>
+
+      <article>
+        <header><span>Post 2 by friend_two</span></header>
+        <div class="media" style="background: #8c6a4a"></div>
+        <div class="actions">♡ 💬</div>
+        <p class="caption">Second post.</p>
+      </article>
+
+      <div class="suggested">
+        <div>
+          <h4>Suggested for you</h4>
+          <a href="/explore/people/">See all</a>
+        </div>
+        <div>stranger_one · Follow</div>
+        <div>stranger_two · Follow</div>
+      </div>
+
+      <article>
+        <header><span>Post 3 by friend_three</span></header>
+        <div class="media" style="background: #5a8c4a"></div>
+        <div class="actions">♡ 💬</div>
+        <p class="caption">Third post.</p>
+      </article>
+
+      <article>
+        <header>
+          <span>Post 4 by brand_account</span>
+          <span>Sponsored</span>
+        </header>
+        <div class="media" style="background: #8c4a7a"></div>
+        <div class="actions">♡ 💬</div>
+        <p class="caption">An ad.</p>
+      </article>
+
+      <article>
+        <header><span>Post 5 by friend_five</span></header>
+        <div class="media tall" style="background: #4a5a8c"></div>
+        <div class="actions">♡ 💬</div>
+        <p class="caption">A tall post, taller than the screen.</p>
+      </article>
+
+      <article>
+        <header><span>Post 6 by friend_six</span></header>
+        <div class="media" style="background: #8c8a4a"></div>
+        <div class="actions">♡ 💬</div>
+        <p class="caption">Sixth post.</p>
+      </article>
+
+      <article>
+        <header><span>Post 7 by friend_seven</span></header>
+        <div class="media" style="background: #4a8c86"></div>
+        <div class="actions">♡ 💬</div>
+        <p class="caption">Seventh post.</p>
+      </article>
+    </main>
+
+    <div class="bottom-bar">
+      <div><a href="/" aria-label="Home">Home</a></div>
+      <div><a href="/explore/" aria-label="Explore">Explore</a></div>
+      <div>
+        <div><a href="/reels/" aria-label="Reels">Reels</a></div>
+      </div>
+      <div><button type="button" aria-label="New post">＋</button></div>
+      <div><a href="/friend_me/" aria-label="Profile">Profile</a></div>
+    </div>
+  </body>
+</html>

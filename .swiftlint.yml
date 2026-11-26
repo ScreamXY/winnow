@@ -1,0 +1,11 @@
+included:
+  - App
+  - Sources
+  - Tests
+  - UITests
+  - scripts
+  - Package.swift
+trailing_comma:
+  mandatory_comma: true
+line_length:
+  warning: 120

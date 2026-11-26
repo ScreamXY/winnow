@@ -1,0 +1,503 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		04A86C66BBFA6084B7B346DD /* winnow.js in Resources */ = {isa = PBXBuildFile; fileRef = 2D5B955621928950FCDA6E50 /* winnow.js */; };
+		1E33A7D96BE799505175F977 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = BE56F277CC03BD8AE6E5F4CC /* Settings.bundle */; };
+		2C00AE058F91CA5EDCE705ED /* fixture-feed.html in Resources */ = {isa = PBXBuildFile; fileRef = C7742E86F8BB14E4B0FBC358 /* fixture-feed.html */; };
+		3C840A3C13DB1F65691A1B9B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C8F5E37216EEB9053D81E715 /* Assets.xcassets */; };
+		4308D95FDCEE644D94092ED8 /* RoutePolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F893D621371610D0B891DB96 /* RoutePolicy.swift */; };
+		8AD8820070C2D806C52FFDB5 /* BrowserController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8C808D7343C7753EA8FA4EE /* BrowserController.swift */; };
+		997C59D7D7A531485F7F3481 /* WinnowApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27BA676877E48CBE75E4FF90 /* WinnowApp.swift */; };
+		B41FE20C4FCF54E44C2F8B5A /* winnow.css in Resources */ = {isa = PBXBuildFile; fileRef = 6D2FE9A9B098D8B748175B1A /* winnow.css */; };
+		BF3E4BDEF2AC4082171E3B31 /* WinnowUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E16FE6264B44446E37785ED1 /* WinnowUITests.swift */; };
+		D3263335C6C8AF375011413F /* FilterSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7D9AE97C6804FCDB9C7A0A /* FilterSettings.swift */; };
+		DBC55272F175DE0C3EF08381 /* FlickPaging.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4B614B958D765B53E4F0F72 /* FlickPaging.swift */; };
+		EC8847C80203818C4AEF10B4 /* UserAgent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FDD9988152EA120B65FBB05 /* UserAgent.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		CB6B8767E30CDBA1BC9DE8A3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 5FC5024A51102264CC023049 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D6436125C91D3F13BD3188A2;
+			remoteInfo = Winnow;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		07378EC9CE2C7D6FD73EE4F1 /* Winnow.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Winnow.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		27BA676877E48CBE75E4FF90 /* WinnowApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WinnowApp.swift; sourceTree = "<group>"; };
+		2D5B955621928950FCDA6E50 /* winnow.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = winnow.js; sourceTree = "<group>"; };
+		6D2FE9A9B098D8B748175B1A /* winnow.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = winnow.css; sourceTree = "<group>"; };
+		7FDD9988152EA120B65FBB05 /* UserAgent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserAgent.swift; sourceTree = "<group>"; };
+		A8C808D7343C7753EA8FA4EE /* BrowserController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowserController.swift; sourceTree = "<group>"; };
+		B4B614B958D765B53E4F0F72 /* FlickPaging.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlickPaging.swift; sourceTree = "<group>"; };
+		BC1ECD7B9E51214C9E7D0064 /* WinnowUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = WinnowUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		BE56F277CC03BD8AE6E5F4CC /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = wrapper.cfbundle; path = Settings.bundle; sourceTree = "<group>"; };
+		BF7D9AE97C6804FCDB9C7A0A /* FilterSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterSettings.swift; sourceTree = "<group>"; };
+		C7742E86F8BB14E4B0FBC358 /* fixture-feed.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = "fixture-feed.html"; sourceTree = "<group>"; };
+		C8F5E37216EEB9053D81E715 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		E16FE6264B44446E37785ED1 /* WinnowUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WinnowUITests.swift; sourceTree = "<group>"; };
+		F893D621371610D0B891DB96 /* RoutePolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutePolicy.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		03D6D8AC2BE21864D0E4AF71 /* Fixtures */ = {
+			isa = PBXGroup;
+			children = (
+				C7742E86F8BB14E4B0FBC358 /* fixture-feed.html */,
+			);
+			path = Fixtures;
+			sourceTree = "<group>";
+		};
+		2BB8AE6E825DF34B5DC801FA /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				C8F5E37216EEB9053D81E715 /* Assets.xcassets */,
+				BE56F277CC03BD8AE6E5F4CC /* Settings.bundle */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		37572C0193DCBED62C6BB37F /* UITests */ = {
+			isa = PBXGroup;
+			children = (
+				E16FE6264B44446E37785ED1 /* WinnowUITests.swift */,
+			);
+			path = UITests;
+			sourceTree = "<group>";
+		};
+		670ECAD77F5AC1A7EA9CF9DA /* App */ = {
+			isa = PBXGroup;
+			children = (
+				A8C808D7343C7753EA8FA4EE /* BrowserController.swift */,
+				27BA676877E48CBE75E4FF90 /* WinnowApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		82F6AC2B376FC580297DB904 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				07378EC9CE2C7D6FD73EE4F1 /* Winnow.app */,
+				BC1ECD7B9E51214C9E7D0064 /* WinnowUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		8A6836204117A0B052E83048 = {
+			isa = PBXGroup;
+			children = (
+				670ECAD77F5AC1A7EA9CF9DA /* App */,
+				03D6D8AC2BE21864D0E4AF71 /* Fixtures */,
+				2BB8AE6E825DF34B5DC801FA /* Resources */,
+				37572C0193DCBED62C6BB37F /* UITests */,
+				9B94D6FF90E6F26CFD3E905C /* Web */,
+				F772C70FD2E13C254EAE2FBB /* WinnowCore */,
+				82F6AC2B376FC580297DB904 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		9B94D6FF90E6F26CFD3E905C /* Web */ = {
+			isa = PBXGroup;
+			children = (
+				6D2FE9A9B098D8B748175B1A /* winnow.css */,
+				2D5B955621928950FCDA6E50 /* winnow.js */,
+			);
+			path = Web;
+			sourceTree = "<group>";
+		};
+		F772C70FD2E13C254EAE2FBB /* WinnowCore */ = {
+			isa = PBXGroup;
+			children = (
+				BF7D9AE97C6804FCDB9C7A0A /* FilterSettings.swift */,
+				B4B614B958D765B53E4F0F72 /* FlickPaging.swift */,
+				F893D621371610D0B891DB96 /* RoutePolicy.swift */,
+				7FDD9988152EA120B65FBB05 /* UserAgent.swift */,
+			);
+			name = WinnowCore;
+			path = Sources/WinnowCore;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		7999414F3BFC066ADD1B5DBB /* WinnowUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BA0EBD423AE07FF3E6C490E0 /* Build configuration list for PBXNativeTarget "WinnowUITests" */;
+			buildPhases = (
+				9FEE5D27528DB93017D96AF3 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				85070E717949FACD54321ABC /* PBXTargetDependency */,
+			);
+			name = WinnowUITests;
+			packageProductDependencies = (
+			);
+			productName = WinnowUITests;
+			productReference = BC1ECD7B9E51214C9E7D0064 /* WinnowUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		D6436125C91D3F13BD3188A2 /* Winnow */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2EEF686FAAFF6D6BCF9CC89E /* Build configuration list for PBXNativeTarget "Winnow" */;
+			buildPhases = (
+				E8345941BD83E2639B9514B4 /* Sources */,
+				4FCD6E79153D26868D242ED3 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Winnow;
+			packageProductDependencies = (
+			);
+			productName = Winnow;
+			productReference = 07378EC9CE2C7D6FD73EE4F1 /* Winnow.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		5FC5024A51102264CC023049 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					7999414F3BFC066ADD1B5DBB = {
+						DevelopmentTeam = QC8483T34B;
+						ProvisioningStyle = Automatic;
+						TestTargetID = D6436125C91D3F13BD3188A2;
+					};
+					D6436125C91D3F13BD3188A2 = {
+						DevelopmentTeam = QC8483T34B;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 80993737B8C67880D29C999F /* Build configuration list for PBXProject "Winnow" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 8A6836204117A0B052E83048;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 82F6AC2B376FC580297DB904 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				D6436125C91D3F13BD3188A2 /* Winnow */,
+				7999414F3BFC066ADD1B5DBB /* WinnowUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		4FCD6E79153D26868D242ED3 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3C840A3C13DB1F65691A1B9B /* Assets.xcassets in Resources */,
+				1E33A7D96BE799505175F977 /* Settings.bundle in Resources */,
+				2C00AE058F91CA5EDCE705ED /* fixture-feed.html in Resources */,
+				B41FE20C4FCF54E44C2F8B5A /* winnow.css in Resources */,
+				04A86C66BBFA6084B7B346DD /* winnow.js in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		9FEE5D27528DB93017D96AF3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BF3E4BDEF2AC4082171E3B31 /* WinnowUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E8345941BD83E2639B9514B4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8AD8820070C2D806C52FFDB5 /* BrowserController.swift in Sources */,
+				D3263335C6C8AF375011413F /* FilterSettings.swift in Sources */,
+				DBC55272F175DE0C3EF08381 /* FlickPaging.swift in Sources */,
+				4308D95FDCEE644D94092ED8 /* RoutePolicy.swift in Sources */,
+				EC8847C80203818C4AEF10B4 /* UserAgent.swift in Sources */,
+				997C59D7D7A531485F7F3481 /* WinnowApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		85070E717949FACD54321ABC /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D6436125C91D3F13BD3188A2 /* Winnow */;
+			targetProxy = CB6B8767E30CDBA1BC9DE8A3 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		2BE45AE98575571879BEF126 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_KEY_CFBundleDisplayName = "Winnow Dev";
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.social-networking";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Instagram uses the camera when you take a photo or video for a post, story or message.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Instagram uses the microphone for videos, voice messages and calls.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Winnow saves photos to your library when you choose to save one.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.screamxy.winnow;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		592386A5CEFF7CC6FDE02FD8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = QC8483T34B;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		C18FA0FE13CA4D99A7A63996 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = QC8483T34B;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		CAAC48C8CD3BA8EA6C8580C3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.screamxy.winnow.uitests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Winnow;
+			};
+			name = Release;
+		};
+		E0A11754C9932733CB581AFC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				EXCLUDED_SOURCE_FILE_NAMES = "fixture-*.html";
+				INFOPLIST_KEY_CFBundleDisplayName = Winnow;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.social-networking";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Instagram uses the camera when you take a photo or video for a post, story or message.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Instagram uses the microphone for videos, voice messages and calls.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Winnow saves photos to your library when you choose to save one.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.screamxy.winnow;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		EA51557F9F05D3C427EC18C0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.screamxy.winnow.uitests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Winnow;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		2EEF686FAAFF6D6BCF9CC89E /* Build configuration list for PBXNativeTarget "Winnow" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2BE45AE98575571879BEF126 /* Debug */,
+				E0A11754C9932733CB581AFC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		80993737B8C67880D29C999F /* Build configuration list for PBXProject "Winnow" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C18FA0FE13CA4D99A7A63996 /* Debug */,
+				592386A5CEFF7CC6FDE02FD8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		BA0EBD423AE07FF3E6C490E0 /* Build configuration list for PBXNativeTarget "WinnowUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				EA51557F9F05D3C427EC18C0 /* Debug */,
+				CAAC48C8CD3BA8EA6C8580C3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 5FC5024A51102264CC023049 /* Project object */;
+}

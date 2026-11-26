@@ -1,0 +1,64 @@
+name: Winnow
+options:
+  bundleIdPrefix: com.screamxy
+  deploymentTarget:
+    iOS: '26.0'
+settings:
+  base:
+    SWIFT_VERSION: '6.0'
+    MARKETING_VERSION: '0.1.0'
+    CURRENT_PROJECT_VERSION: 1
+    GENERATE_INFOPLIST_FILE: YES
+    CODE_SIGN_STYLE: Automatic
+    DEVELOPMENT_TEAM: QC8483T34B
+targets:
+  Winnow:
+    type: application
+    platform: iOS
+    sources:
+      - App
+      - Sources/WinnowCore
+      - Resources
+      - path: Web
+        buildPhase: resources
+      - path: Fixtures
+        buildPhase: resources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.screamxy.winnow
+        TARGETED_DEVICE_FAMILY: '1,2'
+        INFOPLIST_KEY_CFBundleDisplayName: Winnow
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.social-networking
+        INFOPLIST_KEY_ITSAppUsesNonExemptEncryption: NO
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
+        INFOPLIST_KEY_NSCameraUsageDescription: Instagram uses the camera when you take a photo or video for a post, story or message.
+        INFOPLIST_KEY_NSMicrophoneUsageDescription: Instagram uses the microphone for videos, voice messages and calls.
+        INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription: Winnow saves photos to your library when you choose to save one.
+        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: 'UIInterfaceOrientationPortrait'
+        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: 'UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight'
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS: NO
+      configs:
+        Debug:
+          # Xcode Run installs are named "Winnow Dev" so they are told apart from TestFlight builds.
+          INFOPLIST_KEY_CFBundleDisplayName: Winnow Dev
+        Release:
+          # The hand-written test pages are for Debug builds and UI tests only.
+          EXCLUDED_SOURCE_FILE_NAMES: 'fixture-*.html'
+  WinnowUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources: [UITests]
+    dependencies:
+      - target: Winnow
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.screamxy.winnow.uitests
+schemes:
+  Winnow:
+    build:
+      targets:
+        Winnow: all
+    test:
+      targets: [WinnowUITests]

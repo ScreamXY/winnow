@@ -1,0 +1,30 @@
+{
+  "mode": "DO_NOT_START_IF_ALL_FILES_MATCH",
+  "matchers": [
+    {
+      "directory": "",
+      "fileExtension": null,
+      "fileName": "README.md"
+    },
+    {
+      "directory": "",
+      "fileExtension": null,
+      "fileName": "AGENTS.md"
+    },
+    {
+      "directory": "",
+      "fileExtension": null,
+      "fileName": "CLAUDE.md"
+    },
+    {
+      "directory": "",
+      "fileExtension": null,
+      "fileName": "SECURITY.md"
+    },
+    {
+      "directory": "docs",
+      "fileExtension": null,
+      "fileName": null
+    }
+  ]
+}

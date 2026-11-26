@@ -1,0 +1,51 @@
+/*
+ * Winnow page styles. The page script adds these to instagram.com.
+ * Each rule is switched by a flag on <html>, so a change in the Settings app works without a reload.
+ * Prefer link targets (href) over class names: Instagram's class names change often.
+ */
+
+/* Reels tab: the link in the bottom bar (phone) and in the side bar (iPad). */
+html[data-winnow-hide-reels] a[href='/reels/'],
+html[data-winnow-hide-reels] [data-winnow-hidden='reels'] {
+  display: none !important;
+}
+
+/* The endless reels feed: keep it blank while the app leaves the page. */
+html[data-winnow-hide-reels][data-winnow-route='reels'] main {
+  visibility: hidden !important;
+}
+
+/* Explore: hide the algorithmic grid of posts and reels. The search field stays. */
+html[data-winnow-hide-explore][data-winnow-route='explore'] main a[href*='/p/'],
+html[data-winnow-hide-explore][data-winnow-route='explore'] main a[href*='/reel/'] {
+  display: none !important;
+}
+
+html[data-winnow-hide-explore][data-winnow-route='explore'] main::after {
+  content: 'Explore is quiet here. Search still works.';
+  display: block;
+  padding: 48px 24px;
+  text-align: center;
+  font:
+    15px/1.4 -apple-system,
+    system-ui,
+    sans-serif;
+  color: rgb(142, 142, 142);
+}
+
+/* "Suggested for you" accounts and suggested posts. */
+html[data-winnow-hide-suggestions] [data-winnow-hidden='suggestion'] {
+  display: none !important;
+}
+
+/* Sponsored posts (off by default). */
+html[data-winnow-hide-sponsored] [data-winnow-hidden='sponsored'] {
+  display: none !important;
+}
+
+/* "Open the app" banners and App Store links: this is the app. */
+a[href^='instagram://'],
+a[href*='apps.apple.com'],
+a[href*='itunes.apple.com'] {
+  display: none !important;
+}

@@ -15,11 +15,13 @@
 		5DB400E6E433DD5754860BCF /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 38E5D9937B0280E24B7F3C84 /* PrivacyInfo.xcprivacy */; };
 		8AD8820070C2D806C52FFDB5 /* BrowserController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8C808D7343C7753EA8FA4EE /* BrowserController.swift */; };
 		997C59D7D7A531485F7F3481 /* WinnowApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27BA676877E48CBE75E4FF90 /* WinnowApp.swift */; };
+		A38FD1C558937CEDFB67734A /* BrowserController+UI.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED41FE82F9C981B44B53ACAD /* BrowserController+UI.swift */; };
 		B41FE20C4FCF54E44C2F8B5A /* winnow.css in Resources */ = {isa = PBXBuildFile; fileRef = 6D2FE9A9B098D8B748175B1A /* winnow.css */; };
 		BF3E4BDEF2AC4082171E3B31 /* WinnowUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E16FE6264B44446E37785ED1 /* WinnowUITests.swift */; };
 		D3263335C6C8AF375011413F /* FilterSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7D9AE97C6804FCDB9C7A0A /* FilterSettings.swift */; };
 		DBC55272F175DE0C3EF08381 /* FlickPaging.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4B614B958D765B53E4F0F72 /* FlickPaging.swift */; };
 		EC8847C80203818C4AEF10B4 /* UserAgent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FDD9988152EA120B65FBB05 /* UserAgent.swift */; };
+		F6BB8831123AF517A98A15C9 /* DebugProbe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07098B9DC9A0BF8DEDDE889D /* DebugProbe.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -33,6 +35,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		07098B9DC9A0BF8DEDDE889D /* DebugProbe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugProbe.swift; sourceTree = "<group>"; };
 		07378EC9CE2C7D6FD73EE4F1 /* Winnow.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Winnow.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		27BA676877E48CBE75E4FF90 /* WinnowApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WinnowApp.swift; sourceTree = "<group>"; };
 		2D5B955621928950FCDA6E50 /* winnow.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = winnow.js; sourceTree = "<group>"; };
@@ -47,6 +50,7 @@
 		C7742E86F8BB14E4B0FBC358 /* fixture-feed.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = "fixture-feed.html"; sourceTree = "<group>"; };
 		C8F5E37216EEB9053D81E715 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		E16FE6264B44446E37785ED1 /* WinnowUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WinnowUITests.swift; sourceTree = "<group>"; };
+		ED41FE82F9C981B44B53ACAD /* BrowserController+UI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BrowserController+UI.swift"; sourceTree = "<group>"; };
 		F893D621371610D0B891DB96 /* RoutePolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutePolicy.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -81,6 +85,8 @@
 			isa = PBXGroup;
 			children = (
 				A8C808D7343C7753EA8FA4EE /* BrowserController.swift */,
+				ED41FE82F9C981B44B53ACAD /* BrowserController+UI.swift */,
+				07098B9DC9A0BF8DEDDE889D /* DebugProbe.swift */,
 				27BA676877E48CBE75E4FF90 /* WinnowApp.swift */,
 			);
 			path = App;
@@ -237,7 +243,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A38FD1C558937CEDFB67734A /* BrowserController+UI.swift in Sources */,
 				8AD8820070C2D806C52FFDB5 /* BrowserController.swift in Sources */,
+				F6BB8831123AF517A98A15C9 /* DebugProbe.swift in Sources */,
 				D3263335C6C8AF375011413F /* FilterSettings.swift in Sources */,
 				DBC55272F175DE0C3EF08381 /* FlickPaging.swift in Sources */,
 				4308D95FDCEE644D94092ED8 /* RoutePolicy.swift in Sources */,

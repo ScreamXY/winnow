@@ -70,6 +70,34 @@ import Testing
         #expect(target(at: 40, velocity: 0) == nil)
     }
 
+    @Test func postsALittleTallerThanTheScreenStillMoveOnePerFlick() {
+        // Measured on an iPhone 15 Pro: 793 high, top bar 44, bottom bar 84 → 665 free.
+        let phone = FeedLayout(
+            route: "home",
+            posts: [
+                .init(top: 100, height: 679),
+                .init(top: 779, height: 760),
+                .init(top: 1539, height: 694),
+            ],
+            topInset: 44,
+            bottomInset: 84)
+        func target(_ scrollY: Double, _ velocity: Double, proposed: Double? = nil) -> Double? {
+            FlickPaging.target(
+                layout: phone, scrollY: scrollY, proposedY: proposed ?? scrollY + velocity * 1000,
+                viewportHeight: 793, velocity: velocity)
+        }
+        // One flick, one post, even though each post is taller than 665.
+        #expect(target(56, 3.5) == 735)
+        #expect(target(735, 3.5) == 1495)
+        #expect(target(735, -3.5) == 56)
+        // A slow drag inside a post stays there, to read the rest of the caption.
+        #expect(target(60, 0) == nil)
+        // A slow drag a bit past the end of a post shows the whole end of that post.
+        #expect(target(100, 0) == 70)
+        // A slow drag far past the end of a post settles on the next one.
+        #expect(target(700, 0) == 735)
+    }
+
     @Test func noPostsMeansNormalScrolling() {
         let empty = FeedLayout(route: "home", posts: [], topInset: 0, bottomInset: 0)
         #expect(FlickPaging.target(layout: empty, scrollY: 0, proposedY: 500, viewportHeight: 800, velocity: 3) == nil)

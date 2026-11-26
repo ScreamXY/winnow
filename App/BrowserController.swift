@@ -11,15 +11,22 @@ import WebKit
 final class BrowserController: NSObject {
     private(set) var isLoadingFirstPage = true
     private(set) var loadError: String?
+    /// The page's background color, for the strip behind the status bar.
+    private(set) var pageBackground = UIColor.systemBackground
 
     @ObservationIgnored let webView: WKWebView
-    @ObservationIgnored private var settings: FilterSettings
+    @ObservationIgnored private(set) var settings: FilterSettings
     @ObservationIgnored private var layout: FeedLayout?
     @ObservationIgnored private var redirectGuard = RedirectGuard()
     @ObservationIgnored private var urlObservation: NSKeyValueObservation?
+    @ObservationIgnored private var backgroundObservation: NSKeyValueObservation?
     @ObservationIgnored private var hasStarted = false
     @ObservationIgnored private let refreshControl = UIRefreshControl()
     @ObservationIgnored private let log = Logger(subsystem: "com.screamxy.winnow", category: "browser")
+    #if DEBUG
+        @ObservationIgnored private var probe: DebugProbe?
+        @ObservationIgnored private var flickLog: [[String: Any]] = []
+    #endif
 
     override init() {
         settings = FilterSettings(defaults: .standard)
@@ -55,6 +62,14 @@ final class BrowserController: NSObject {
                 self?.pageAddressChanged(webView.url)
             }
         }
+        backgroundObservation = webView.observe(\.underPageBackgroundColor, options: [.new]) { [weak self] webView, _ in
+            MainActor.assumeIsolated {
+                self?.pageBackground = webView.underPageBackgroundColor
+            }
+        }
+        #if DEBUG
+            probe = DebugProbe(webView: webView) { [weak self] in self?.debugState() ?? [:] }
+        #endif
     }
 
     // MARK: - Public actions
@@ -140,7 +155,7 @@ final class BrowserController: NSObject {
 
     // MARK: - Navigation
 
-    private func load(_ url: URL) {
+    func load(_ url: URL) {
         webView.load(URLRequest(url: url))
     }
 
@@ -156,7 +171,7 @@ final class BrowserController: NSObject {
 
     /// Returns false if the redirect was skipped to stop a loop.
     @discardableResult
-    private func redirect(to target: URL) -> Bool {
+    func redirect(to target: URL) -> Bool {
         guard redirectGuard.allowRedirect(at: .now) else {
             log.notice("Skipped redirect to \(target.absoluteString, privacy: .public) to stop a loop")
             return false
@@ -165,7 +180,7 @@ final class BrowserController: NSObject {
         return true
     }
 
-    private func openOutside(_ url: URL) {
+    func openOutside(_ url: URL) {
         UIApplication.shared.open(url)
     }
 
@@ -186,7 +201,7 @@ final class BrowserController: NSObject {
         }
     }
 
-    private func showDialog(_ alert: UIAlertController) {
+    func showDialog(_ alert: UIAlertController) {
         var presenter = webView.window?.rootViewController
         while let next = presenter?.presentedViewController {
             presenter = next
@@ -258,82 +273,13 @@ extension BrowserController: WKNavigationDelegate {
     }
 }
 
-// MARK: - WKUIDelegate
-
-extension BrowserController: WKUIDelegate {
-    /// Links that open a new window (target=_blank, window.open).
-    func webView(
-        _ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration,
-        for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures
-    ) -> WKWebView? {
-        guard let url = navigationAction.request.url else {
-            return nil
-        }
-        switch RoutePolicy.decide(url, settings: settings, userTappedLink: true) {
-        case .allow:
-            load(url)
-        case .redirect(let target):
-            redirect(to: target)
-        case .openExternally(let target):
-            openOutside(target)
-        case .block:
-            break
-        }
-        return nil
-    }
-
-    func webView(
-        _ webView: WKWebView, decideMediaCapturePermissionsFor origin: WKSecurityOrigin,
-        initiatedBy frame: WKFrameInfo, type: WKMediaCaptureType
-    ) async -> WKPermissionDecision {
-        .prompt
-    }
-
-    func webView(
-        _ webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String,
-        initiatedByFrame frame: WKFrameInfo
-    ) async {
-        await withCheckedContinuation { continuation in
-            let alert = UIAlertController(title: nil, message: message, preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "OK", style: .default) { _ in continuation.resume() })
-            showDialog(alert)
-        }
-    }
-
-    func webView(
-        _ webView: WKWebView, runJavaScriptConfirmPanelWithMessage message: String,
-        initiatedByFrame frame: WKFrameInfo
-    ) async -> Bool {
-        await withCheckedContinuation { continuation in
-            let alert = UIAlertController(title: nil, message: message, preferredStyle: .alert)
-            alert.addAction(
-                UIAlertAction(title: "Cancel", style: .cancel) { _ in continuation.resume(returning: false) })
-            alert.addAction(UIAlertAction(title: "OK", style: .default) { _ in continuation.resume(returning: true) })
-            showDialog(alert)
-        }
-    }
-
-    func webView(
-        _ webView: WKWebView, runJavaScriptTextInputPanelWithPrompt prompt: String, defaultText: String?,
-        initiatedByFrame frame: WKFrameInfo
-    ) async -> String? {
-        await withCheckedContinuation { continuation in
-            let alert = UIAlertController(title: nil, message: prompt, preferredStyle: .alert)
-            alert.addTextField { $0.text = defaultText }
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel) { _ in continuation.resume(returning: nil) })
-            alert.addAction(
-                UIAlertAction(title: "OK", style: .default) { [weak alert] _ in
-                    continuation.resume(returning: alert?.textFields?.first?.text ?? "")
-                })
-            showDialog(alert)
-        }
-    }
-}
-
 // MARK: - UIScrollViewDelegate (flick mode)
 
 extension BrowserController: UIScrollViewDelegate {
     func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        // A fast stop makes one flick feel like one step. Other pages keep normal scrolling.
+        let flicking = settings.flickMode && layout?.route == "home"
+        scrollView.decelerationRate = flicking ? .fast : .normal
         refreshLayout()
     }
 
@@ -341,6 +287,9 @@ extension BrowserController: UIScrollViewDelegate {
         _ scrollView: UIScrollView, withVelocity velocity: CGPoint,
         targetContentOffset: UnsafeMutablePointer<CGPoint>
     ) {
+        #if DEBUG
+            recordFlick(scrollView, velocity: velocity, proposed: targetContentOffset.pointee.y)
+        #endif
         guard settings.flickMode, let layout, layout.route == "home", scrollView.zoomScale > 0 else {
             return
         }
@@ -359,8 +308,48 @@ extension BrowserController: UIScrollViewDelegate {
         }
         let maxOffset = max(-insets.top, scrollView.contentSize.height - scrollView.bounds.height + insets.bottom)
         targetContentOffset.pointee.y = min(max(target * zoom - insets.top, -insets.top), maxOffset)
+        #if DEBUG
+            flickLog[flickLog.count - 1]["target"] = targetContentOffset.pointee.y
+        #endif
     }
 }
+
+#if DEBUG
+    // MARK: - Debug probe state
+
+    extension BrowserController {
+        fileprivate func recordFlick(_ scrollView: UIScrollView, velocity: CGPoint, proposed: CGFloat) {
+            flickLog.append([
+                "offsetY": scrollView.contentOffset.y,
+                "proposedY": proposed,
+                "velocityY": velocity.y,
+                "route": layout?.route ?? "none",
+                "posts": layout?.posts.count ?? -1,
+            ])
+            flickLog = Array(flickLog.suffix(10))
+        }
+
+        fileprivate func debugState() -> [String: Any] {
+            let scrollView = webView.scrollView
+            let insets = scrollView.adjustedContentInset
+            return [
+                "url": webView.url?.absoluteString ?? "",
+                "contentOffsetY": scrollView.contentOffset.y,
+                "contentHeight": scrollView.contentSize.height,
+                "boundsHeight": scrollView.bounds.height,
+                "insetTop": insets.top,
+                "insetBottom": insets.bottom,
+                "zoom": scrollView.zoomScale,
+                "flickMode": settings.flickMode,
+                "layoutRoute": layout?.route ?? "none",
+                "layoutPosts": layout?.posts.prefix(6).map { [$0.top, $0.height] } ?? [],
+                "layoutTopInset": layout?.topInset ?? -1,
+                "layoutBottomInset": layout?.bottomInset ?? -1,
+                "flickLog": flickLog,
+            ]
+        }
+    }
+#endif
 
 // MARK: - Messages from the page script
 

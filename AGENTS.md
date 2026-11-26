@@ -62,8 +62,12 @@ under `build/ci/`. If `xcode-select` points at the Command Line Tools, prefix co
 `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer`.
 
 Filters can only be fully checked against the real instagram.com on a device: connect the device,
-open Safari → Develop → the device → Winnow, and inspect the page. Report what was checked on a
-device separately from simulator results.
+open Safari → Develop → the device → Winnow, and inspect the page. Agents use the Debug-only probe
+instead (`App/DebugProbe.swift`): with Winnow Dev open on the device, `scripts/device-probe.sh
+<device> <script.js> [--snapshot]` runs the script in the page and prints the answer. Probe scripts
+return page structure only (tags, roles, link patterns, sizes), never names, captions or messages.
+Probe output and snapshots stay in `build/` (ignored by git) and are never committed. Report what
+was checked on a device separately from simulator results.
 
 Run the affected suites before committing and report what actually ran. Keep tests
 and local scripts even when their hosted jobs are removed. Do not increase a CI

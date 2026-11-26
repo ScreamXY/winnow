@@ -102,6 +102,7 @@ sh scripts/check.sh               # lint, format, core tests, XcodeGen, simulato
 bash scripts/ci-test.sh iPhone    # UI tests against the test page
 bash scripts/ci-test.sh iPad
 swift scripts/make-icon.swift     # redraw the app icon
+scripts/device-probe.sh <device> probe.js   # run a script in Winnow Dev on a device (Debug only)
 ```
 
 See `AGENTS.md` for the project rules.

@@ -17,9 +17,11 @@ struct BrowserScreen: View {
 
     var body: some View {
         ZStack {
-            Color(uiColor: .systemBackground).ignoresSafeArea()
+            Color(uiColor: browser.pageBackground).ignoresSafeArea()
+            // Instagram's web page does not leave room for the status bar (Safari does that), so
+            // the page starts below it. At the bottom, Instagram already adds room for the home bar.
             WebViewHost(webView: browser.webView)
-                .ignoresSafeArea()
+                .ignoresSafeArea(edges: .bottom)
             if browser.isLoadingFirstPage {
                 ProgressView()
                     .controlSize(.large)

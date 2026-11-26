@@ -103,10 +103,10 @@ import Testing
         let defaults = try #require(UserDefaults(suiteName: suite))
         defer { defaults.removePersistentDomain(forName: suite) }
         #expect(FilterSettings(defaults: defaults) == FilterSettings())
-        defaults.set(true, forKey: FilterSettings.Key.hideSponsored)
+        defaults.set(false, forKey: FilterSettings.Key.hideSponsored)
         defaults.set(false, forKey: FilterSettings.Key.flickMode)
         let changed = FilterSettings(defaults: defaults)
-        #expect(changed.hideSponsored)
+        #expect(!changed.hideSponsored)
         #expect(!changed.flickMode)
         #expect(changed.forceFollowing)
     }
@@ -114,6 +114,6 @@ import Testing
     @Test func settingsBecomeJavaScript() {
         let literal = FilterSettings().javaScriptLiteral()
         #expect(literal.contains("\"forceFollowing\":true"))
-        #expect(literal.contains("\"hideSponsored\":false"))
+        #expect(literal.contains("\"hideSponsored\":true"))
     }
 }

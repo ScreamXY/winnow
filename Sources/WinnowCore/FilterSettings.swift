@@ -12,8 +12,8 @@ struct FilterSettings: Equatable, Sendable, Codable {
     var hideExplore = true
     /// Hide "Suggested for you" accounts and suggested posts.
     var hideSuggestions = true
-    /// Hide sponsored posts. Off by default: the app keeps everything that is not algorithmic.
-    var hideSponsored = false
+    /// Hide sponsored posts. Ads are chosen by the algorithm too.
+    var hideSponsored = true
     /// Move one post per flick in the home feed.
     var flickMode = true
 

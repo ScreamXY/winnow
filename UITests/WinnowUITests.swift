@@ -27,14 +27,14 @@ final class WinnowUITests: XCTestCase {
         XCTAssertFalse(web.staticTexts["Suggested for you"].exists)
         XCTAssertFalse(web.links["See all"].exists)
         XCTAssertFalse(web.links["Open app"].exists)
-        // Sponsored posts stay by default.
-        XCTAssertTrue(web.staticTexts["Post 4 by brand_account"].exists)
+        XCTAssertFalse(web.staticTexts["Post 4 by brand_account"].exists)
+        XCTAssertTrue(web.staticTexts["Post 3 by friend_three"].exists)
     }
 
     @MainActor
     func testSwitchesInSettingsChangeWhatIsHidden() {
-        let web = launch(["-hide_sponsored", "YES", "-hide_reels", "NO", "-hide_suggestions", "NO"])
-        XCTAssertFalse(web.staticTexts["Post 4 by brand_account"].exists)
+        let web = launch(["-hide_sponsored", "NO", "-hide_reels", "NO", "-hide_suggestions", "NO"])
+        XCTAssertTrue(web.staticTexts["Post 4 by brand_account"].exists)
         XCTAssertTrue(web.links["Reels"].exists)
         XCTAssertTrue(web.staticTexts["Suggested for you"].exists)
     }

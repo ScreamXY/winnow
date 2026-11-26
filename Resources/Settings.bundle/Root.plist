@@ -78,7 +78,7 @@
 			<key>Key</key>
 			<string>hide_sponsored</string>
 			<key>DefaultValue</key>
-			<false/>
+			<true/>
 		</dict>
 	</array>
 </dict>

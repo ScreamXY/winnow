@@ -38,7 +38,7 @@ html[data-winnow-hide-suggestions] [data-winnow-hidden='suggestion'] {
   display: none !important;
 }
 
-/* Sponsored posts (off by default). */
+/* Sponsored posts. */
 html[data-winnow-hide-sponsored] [data-winnow-hidden='sponsored'] {
   display: none !important;
 }

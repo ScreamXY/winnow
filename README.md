@@ -22,7 +22,7 @@ Winnow is not made by, or connected to, Instagram or Meta.
 | The Explore grid                                 | Hides the grid. **Search still works.**                                                                                                                                     |
 | "Suggested for you" accounts and suggested posts | Hidden.                                                                                                                                                                     |
 | Push notifications about suggested reels         | None. Winnow has no push notifications at all (see limits).                                                                                                                 |
-| Sponsored posts                                  | Kept by default. You can hide them in Settings.                                                                                                                             |
+| Sponsored posts                                  | Hidden. You can show them again in Settings.                                                                                                                                |
 | A feed that scrolls freely                       | **Flick mode**: one flick moves exactly one post, like the full-screen feed Instagram tested in 2022. Long posts still scroll, and a slow drag settles on the nearest post. |
 
 Messages, stories, profiles, comments, likes, search, posting and your account settings work like on
@@ -34,7 +34,7 @@ Open **Settings → Apps → Winnow**. Changes apply when you go back to Winnow.
 
 - Open the Following feed (on)
 - Flick mode (on)
-- Hide: Reels tab and reels feed (on), Explore grid (on), Suggestions (on), Sponsored posts (off)
+- Hide: Reels tab and reels feed (on), Explore grid (on), Suggestions (on), Sponsored posts (on)
 
 ## How it works
 
@@ -61,11 +61,11 @@ SwiftUI app
 Winnow is for personal use. It is not on the App Store and it is not planned: App Review would
 very likely reject an app that wraps another company's website (guidelines 4.2 and 5.2.2).
 
+- **TestFlight (internal):** every push to `main` builds the app in Xcode Cloud and sends it to the
+  internal TestFlight group. Internal testing needs no App Review. Builds expire after 90 days. The
+  one-time setup is in [`docs/TESTFLIGHT.md`](docs/TESTFLIGHT.md).
 - **From Xcode:** open `Winnow.xcodeproj`, choose your iPhone or iPad and press Run. With a paid
-  developer account the install lasts up to one year.
-- **TestFlight (internal):** create the app in App Store Connect and an Xcode Cloud workflow for the
-  `Winnow` scheme, like the other ScreamXY apps. Internal testing needs no App Review. Builds
-  expire after 90 days, and every push to `main` makes a new one.
+  developer account the install lasts up to one year. Xcode installs are called "Winnow Dev".
 
 Then log in to Instagram once in the app. You can remove the official Instagram app or move it to
 the App Library.

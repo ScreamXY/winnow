@@ -40,6 +40,10 @@ Obsidian vault at `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Priva
 Winnow carries the shared rules without the App Store eligibility bullet, because it never goes to
 the App Store. Its Xcode Cloud archive may use **TestFlight (Internal Testing Only)**.
 
+Status (26 November 2026): the repo is ready for TestFlight, but no App Store Connect record,
+internal group or Xcode Cloud workflow exists yet. Release scheme: `Winnow`. App Store Connect name:
+`Winnow Feed` ("Winnow" is taken). Setup steps and status: `docs/TESTFLIGHT.md`.
+
 - Public support and security contact: `screamcode@gmail.com`. Keep in-app contact details, portal policies and App Store metadata consistent.
 - `AGENTS.md` owns the rules. `CLAUDE.md` contains only: `See @AGENTS.md for monorepo documentation and guidelines.`
 - Delivery (14 October 2026): feature branches are run from Xcode directly on the device with development signing. A push to `main` triggers the app's Xcode Cloud workflow, which archives the release scheme and delivers it to the internal TestFlight group; `ci_scripts/ci_post_xcodebuild.sh` writes the "What to Test" notes from the commit subjects. GitHub Actions stays the fast PR check and never signs or uploads. Xcode Cloud stamps its own build number (ignore `CURRENT_PROJECT_VERSION` there); after a manual upload, raise the next build number in the product's Xcode Cloud settings. A red Xcode Cloud run on `main` is a release problem: fix it on a branch, do not retry.

@@ -12,6 +12,7 @@
 		2C00AE058F91CA5EDCE705ED /* fixture-feed.html in Resources */ = {isa = PBXBuildFile; fileRef = C7742E86F8BB14E4B0FBC358 /* fixture-feed.html */; };
 		3C840A3C13DB1F65691A1B9B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C8F5E37216EEB9053D81E715 /* Assets.xcassets */; };
 		4308D95FDCEE644D94092ED8 /* RoutePolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F893D621371610D0B891DB96 /* RoutePolicy.swift */; };
+		5DB400E6E433DD5754860BCF /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 38E5D9937B0280E24B7F3C84 /* PrivacyInfo.xcprivacy */; };
 		8AD8820070C2D806C52FFDB5 /* BrowserController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8C808D7343C7753EA8FA4EE /* BrowserController.swift */; };
 		997C59D7D7A531485F7F3481 /* WinnowApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27BA676877E48CBE75E4FF90 /* WinnowApp.swift */; };
 		B41FE20C4FCF54E44C2F8B5A /* winnow.css in Resources */ = {isa = PBXBuildFile; fileRef = 6D2FE9A9B098D8B748175B1A /* winnow.css */; };
@@ -35,6 +36,7 @@
 		07378EC9CE2C7D6FD73EE4F1 /* Winnow.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Winnow.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		27BA676877E48CBE75E4FF90 /* WinnowApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WinnowApp.swift; sourceTree = "<group>"; };
 		2D5B955621928950FCDA6E50 /* winnow.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = winnow.js; sourceTree = "<group>"; };
+		38E5D9937B0280E24B7F3C84 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		6D2FE9A9B098D8B748175B1A /* winnow.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = winnow.css; sourceTree = "<group>"; };
 		7FDD9988152EA120B65FBB05 /* UserAgent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserAgent.swift; sourceTree = "<group>"; };
 		A8C808D7343C7753EA8FA4EE /* BrowserController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowserController.swift; sourceTree = "<group>"; };
@@ -61,6 +63,7 @@
 			isa = PBXGroup;
 			children = (
 				C8F5E37216EEB9053D81E715 /* Assets.xcassets */,
+				38E5D9937B0280E24B7F3C84 /* PrivacyInfo.xcprivacy */,
 				BE56F277CC03BD8AE6E5F4CC /* Settings.bundle */,
 			);
 			path = Resources;
@@ -211,6 +214,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				3C840A3C13DB1F65691A1B9B /* Assets.xcassets in Resources */,
+				5DB400E6E433DD5754860BCF /* PrivacyInfo.xcprivacy in Resources */,
 				1E33A7D96BE799505175F977 /* Settings.bundle in Resources */,
 				2C00AE058F91CA5EDCE705ED /* fixture-feed.html in Resources */,
 				B41FE20C4FCF54E44C2F8B5A /* winnow.css in Resources */,

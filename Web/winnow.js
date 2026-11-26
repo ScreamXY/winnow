@@ -26,7 +26,7 @@
       hideReels: true,
       hideExplore: true,
       hideSuggestions: true,
-      hideSponsored: false,
+      hideSponsored: true,
       flickMode: true,
     },
     boot.config || {},

@@ -15,9 +15,14 @@ html[data-winnow-hide-reels][data-winnow-route='reels'] main {
   visibility: hidden !important;
 }
 
-/* Room for the stories tray above the first post. The app sets the height and shows the tray there. */
-html[data-winnow-route='home'] [data-winnow-first-post] {
+/* Room for the stories tray above the list of posts. The app sets the height and shows the tray there. */
+html[data-winnow-route='home'][data-winnow-stories] [data-winnow-feed] {
   margin-top: var(--winnow-stories-space, 0px) !important;
+}
+
+/* The back arrow in the Following feed's title: it leads to the "For you" feed. */
+html[data-winnow-force-following] [data-winnow-hidden='back'] {
+  display: none !important;
 }
 
 /* Explore: hide the algorithmic grid of posts and reels. The search field stays. */

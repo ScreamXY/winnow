@@ -30,6 +30,8 @@
     html.winnow-strip [data-winnow-tray] {
       position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important;
       width: 100vw !important; max-width: none !important; margin: 0 !important;
+      box-sizing: border-box !important; bottom: auto !important;
+      height: var(--winnow-tray-height, auto) !important;
       z-index: 2147483647 !important; background: var(--winnow-strip-bg, transparent) !important;
     }`;
 
@@ -81,12 +83,15 @@
     const row = items.filter((el) => Math.abs(el.getBoundingClientRect().top - rowTop) < 12);
     if (row.length < 2) return null;
     let tray = commonAncestor(row[0], row[row.length - 1]);
-    // Grow to the full-width row, but never into a tall block.
+    // Grow to the box that scrolls the row sideways, or else to the full-width row, but never into
+    // a tall block. A row wider than the screen sits inside such a box: pinning the row itself
+    // would take it out of the box, and it could no longer scroll.
     for (let n = tray; n && n !== document.body && n.tagName !== 'MAIN'; n = n.parentElement) {
       const r = n.getBoundingClientRect();
       if (r.height > MAX_TRAY_HEIGHT) break;
       tray = n;
-      if (r.width >= window.innerWidth - 2) break;
+      if (/auto|scroll/.test(getComputedStyle(n).overflowX)) break;
+      if (Math.abs(r.width - window.innerWidth) <= 2) break;
     }
     return tray && tray !== document.body ? tray : null;
   };
@@ -107,6 +112,10 @@
         }
         return;
       }
+      // Keep the height the tray has in the page. Pinned, a height given in % (iPad layout) would
+      // grow to the whole strip, and "auto" would collapse the row inside.
+      const pageHeight = Math.round(tray.getBoundingClientRect().height);
+      document.documentElement.style.setProperty('--winnow-tray-height', pageHeight + 'px');
       tray.setAttribute('data-winnow-tray', '');
       const background = getComputedStyle(document.body).backgroundColor;
       document.documentElement.style.setProperty('--winnow-strip-bg', background);

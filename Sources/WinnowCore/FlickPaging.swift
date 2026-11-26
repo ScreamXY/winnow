@@ -16,8 +16,10 @@ struct FeedLayout: Equatable, Sendable, Decodable {
     var topInset: Double
     /// Height of the fixed bar at the bottom of the page (0 if there is none).
     var bottomInset: Double
-    /// The empty space above the first post where the app shows the stories tray, if any.
+    /// The empty space above the posts where the app shows the stories tray, if any.
     var stories: StoriesSlot?
+    /// True while a dialog (a menu or a sheet) covers the page. The tray must not cover it.
+    var dialogOpen = false
 
     /// Page position and width of the stories space, in CSS pixels.
     struct StoriesSlot: Equatable, Sendable, Decodable {
@@ -47,21 +49,24 @@ enum FlickPaging {
     ///   - proposedY: Where the scroll would stop without flick mode.
     ///   - viewportHeight: Visible page height.
     ///   - velocity: Release speed in points per millisecond. Positive means "towards newer posts".
+    ///   - dragStartY: The page position when the finger touched down. A flick moves one post from
+    ///     there, however far the finger moved: above the first post, the drag itself often passes
+    ///     the start of post 1, and the flick must not skip it.
     /// - Returns: The page position to stop at, or nil to keep normal scrolling.
     static func target(
-        layout: FeedLayout, scrollY: Double, proposedY: Double, viewportHeight: Double, velocity: Double
+        layout: FeedLayout, scrollY: Double, proposedY: Double, viewportHeight: Double, velocity: Double,
+        dragStartY: Double? = nil
     ) -> Double? {
+        let isFlick = abs(velocity) > flickVelocity
         guard
             let scroll = Scroll(
-                layout: layout, scrollY: scrollY, proposedY: proposedY, viewportHeight: viewportHeight)
+                layout: layout, scrollY: isFlick ? dragStartY ?? scrollY : scrollY, proposedY: proposedY,
+                viewportHeight: viewportHeight)
         else {
             return nil
         }
-        if velocity > flickVelocity {
-            return scroll.forward()
-        }
-        if velocity < -flickVelocity {
-            return scroll.back()
+        if isFlick {
+            return velocity > 0 ? scroll.forward() : scroll.back()
         }
         return scroll.settle()
     }

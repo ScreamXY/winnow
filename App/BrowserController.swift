@@ -21,6 +21,12 @@ final class BrowserController: NSObject {
     @ObservationIgnored let stories: StoriesStrip
     /// True after a story opened from the tray, so the tray reloads (seen rings) on return.
     @ObservationIgnored var visitedStories = false
+    /// The page position when the finger touched down. A flick moves one post from here.
+    @ObservationIgnored private var dragStartY: Double?
+    /// The story shown above the feed, if any.
+    @ObservationIgnored var storyViewer: StoryViewer?
+    /// How often iOS ended the page's process (usually low memory) and the page loaded again.
+    @ObservationIgnored private(set) var processTerminations = 0
     @ObservationIgnored private var redirectGuard = RedirectGuard()
     @ObservationIgnored private var urlObservation: NSKeyValueObservation?
     @ObservationIgnored private var backgroundObservation: NSKeyValueObservation?
@@ -89,7 +95,6 @@ final class BrowserController: NSObject {
             return
         }
         hasStarted = true
-        reloadStories()
         #if DEBUG
             if let html = Self.fixtureHTML() {
                 // A hand-written test page. The base URL makes the page script treat it as Instagram.
@@ -262,7 +267,8 @@ extension BrowserController: WKNavigationDelegate {
         isLoadingFirstPage = false
         loadError = nil
         refreshControl.endRefreshing()
-        // A full load resets the room for the tray. After a login, the tray may load now.
+        // A full load resets the room for the tray. After a login, the tray may load now (the strip
+        // checks the login and the page itself).
         applyStoriesSpace()
         if storiesEnabled, stories.trayHeight == 0 {
             stories.reloadIfOlder(than: 10)
@@ -278,6 +284,8 @@ extension BrowserController: WKNavigationDelegate {
     }
 
     func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
+        processTerminations += 1
+        log.notice("The page's process ended (\(self.processTerminations, privacy: .public) times); loading again")
         webView.reload()
     }
 
@@ -307,6 +315,9 @@ extension BrowserController: UIScrollViewDelegate {
         // A fast stop makes one flick feel like one step. Other pages keep normal scrolling.
         let flicking = settings.flickMode && layout?.route == "home"
         scrollView.decelerationRate = flicking ? .fast : .normal
+        dragStartY =
+            scrollView.zoomScale > 0
+            ? (scrollView.contentOffset.y + scrollView.adjustedContentInset.top) / scrollView.zoomScale : nil
         refreshLayout()
     }
 
@@ -329,7 +340,7 @@ extension BrowserController: UIScrollViewDelegate {
         guard
             let target = FlickPaging.target(
                 layout: layout, scrollY: scrollY, proposedY: proposedY, viewportHeight: viewportHeight,
-                velocity: velocity.y)
+                velocity: velocity.y, dragStartY: dragStartY)
         else {
             return
         }
@@ -373,6 +384,9 @@ extension BrowserController: UIScrollViewDelegate {
                 "layoutTopInset": layout?.topInset ?? -1,
                 "layoutBottomInset": layout?.bottomInset ?? -1,
                 "flickLog": flickLog,
+                "processTerminations": processTerminations,
+                "stripProcessTerminations": stories.processTerminations,
+                "storyViewerOpen": storyViewer != nil,
             ]
         }
     }

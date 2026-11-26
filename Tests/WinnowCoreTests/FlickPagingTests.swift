@@ -28,6 +28,26 @@ import Testing
         #expect(target(at: 0, velocity: 2) == 100)
     }
 
+    @Test func flickCountsFromWhereTheDragStarted() {
+        // At the top, a 300 point drag passes the start of post 1 (100) before the finger lifts.
+        // The flick still stops at post 1 and does not skip it.
+        let fromTop = FlickPaging.target(
+            layout: layout, scrollY: 300, proposedY: 1300, viewportHeight: viewport, velocity: 2, dragStartY: 0)
+        #expect(fromTop == 100)
+        // At post 1, a long drag past the start of post 2 still stops at post 2.
+        let long = FlickPaging.target(
+            layout: layout, scrollY: 800, proposedY: 1800, viewportHeight: viewport, velocity: 2, dragStartY: 100)
+        #expect(long == 700)
+        // Back from post 2 with a long drag stops at post 1, not at the top.
+        let back = FlickPaging.target(
+            layout: layout, scrollY: 200, proposedY: -800, viewportHeight: viewport, velocity: -2, dragStartY: 700)
+        #expect(back == 100)
+        // A slow release settles from where the finger lifted.
+        let slow = FlickPaging.target(
+            layout: layout, scrollY: 650, proposedY: 660, viewportHeight: viewport, velocity: 0.1, dragStartY: 100)
+        #expect(slow == 700)
+    }
+
     @Test func flickMovesExactlyOnePost() {
         // Post 1 starts at 150, so its start position is 150 - 50 = 100.
         #expect(target(at: 100, velocity: 3) == 700)

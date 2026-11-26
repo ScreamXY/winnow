@@ -2,7 +2,8 @@ import UIKit
 import WebKit
 
 // The stories tray above the Following feed. `StoriesStrip` loads the tray; this extension makes room
-// for it above the first post (`setStoriesSpace` in `Web/winnow.js`) and moves it with the feed.
+// for it above the list of posts (`setStoriesSpace` in `Web/winnow.js`) and moves it with the feed.
+// A tapped story opens in a `StoryViewer` above the feed, so the feed keeps its place.
 
 extension BrowserController {
     /// The tray belongs to the Following feed; without that feed, Instagram's own home has a tray.
@@ -18,6 +19,24 @@ extension BrowserController {
         stories.onOpen = { [weak self] url in
             self?.openFromStories(url)
         }
+        stories.mayLoad = { [weak self] in
+            await self?.storiesMayLoad() ?? false
+        }
+    }
+
+    /// The strip loads only on the feed and only after login. See `StoriesPolicy`.
+    private func storiesMayLoad() async -> Bool {
+        guard storiesEnabled, StoriesPolicy.isFeed(webView.url) else {
+            return false
+        }
+        #if DEBUG
+            // The UI test pages have no login.
+            if UserDefaults.standard.string(forKey: "WinnowFixture") != nil {
+                return true
+            }
+        #endif
+        let cookies = await webView.configuration.websiteDataStore.httpCookieStore.allCookies()
+        return storiesEnabled && StoriesPolicy.mayLoad(mainPage: webView.url, cookies: cookies)
     }
 
     func reloadStories() {
@@ -26,7 +45,7 @@ extension BrowserController {
         }
     }
 
-    /// Makes room above the first post for the tray (or removes the room), then places the tray.
+    /// Makes room above the posts for the tray (or removes the room), then places the tray.
     func applyStoriesSpace() {
         let height = storiesEnabled ? Double(stories.trayHeight) : 0
         webView.callAsyncJavaScript(
@@ -44,7 +63,7 @@ extension BrowserController {
     /// Moves the tray with the feed. Runs on every scroll step, so it only sets frames.
     func placeStories() {
         let scrollView = webView.scrollView
-        guard storiesEnabled, let layout, layout.route == "home", let slot = layout.stories,
+        guard storiesEnabled, let layout, layout.route == "home", !layout.dialogOpen, let slot = layout.stories,
             scrollView.zoomScale > 0
         else {
             stories.place(frame: nil, clipTop: 0, in: webView.bounds)
@@ -76,11 +95,38 @@ extension BrowserController {
         if visitedStories {
             visitedStories = false
             stories.load()
+        } else if stories.trayHeight == 0 {
+            // Instagram may open the feed without a full load, for example right after login.
+            stories.reloadIfOlder(than: 10)
         }
         // Instagram draws the feed after the address changes; measure again a moment later.
         Task { @MainActor [weak self] in
             try? await Task.sleep(for: .milliseconds(600))
             self?.applyStoriesSpace()
+        }
+    }
+
+    /// Shows a story full screen above the feed.
+    private func showStory(_ url: URL) {
+        storyViewer?.close()
+        let viewer = StoryViewer(url: url, applicationName: webView.configuration.applicationNameForUserAgent)
+        viewer.webView.frame = webView.bounds
+        viewer.webView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        viewer.onClose = { [weak self, weak viewer] next in
+            self?.storyClosed(viewer, next: next)
+        }
+        webView.addSubview(viewer.webView)
+        storyViewer = viewer
+    }
+
+    /// Back on the feed: reload the tray for the seen rings, and open the next page if there is one.
+    private func storyClosed(_ viewer: StoryViewer?, next: URL?) {
+        if storyViewer === viewer {
+            storyViewer = nil
+        }
+        stories.load()
+        if let next {
+            openFromStories(next)
         }
     }
 
@@ -91,11 +137,13 @@ extension BrowserController {
         applyStoriesSpace()
     }
 
-    /// A story (or another page) tapped in the tray opens in the main web view.
+    /// A story tapped in the tray opens above the feed. Another page opens in the main web view.
     private func openFromStories(_ url: URL) {
-        visitedStories = true
         switch RoutePolicy.decide(url, settings: settings, userTappedLink: true) {
+        case .allow where StoryViewer.isStory(url):
+            showStory(url)
         case .allow:
+            visitedStories = true
             load(url)
         case .redirect(let target):
             redirect(to: target)

@@ -12,7 +12,7 @@ extension BrowserController: WKUIDelegate {
         guard let url = navigationAction.request.url else {
             return nil
         }
-        switch RoutePolicy.decide(url, settings: settings, userTappedLink: true) {
+        switch RoutePolicy.decideNewWindow(url, settings: settings) {
         case .allow:
             load(url)
         case .redirect(let target):

@@ -80,6 +80,16 @@ import Testing
         #expect(decide("mailto:hi@example.com") == .openExternally(URL(string: "mailto:hi@example.com")!))
     }
 
+    @Test func newWindowsOnlyLoadWebPages() {
+        let decide = { (text: String) in RoutePolicy.decideNewWindow(URL(string: text)!, settings: self.settings) }
+        #expect(decide("about:blank") == .block)
+        #expect(decide("blob:https://www.instagram.com/1234") == .block)
+        #expect(decide("data:image/png;base64,AAAA") == .block)
+        #expect(decide("https://www.instagram.com/p/abc/") == .allow)
+        #expect(decide("https://www.instagram.com/") == .redirect(RoutePolicy.followingFeed))
+        #expect(decide("https://example.com/") == .openExternally(URL(string: "https://example.com/")!))
+    }
+
     @Test func redirectGuardStopsLoops() {
         var guardrail = RedirectGuard(limit: 3, window: 15)
         let start = Date(timeIntervalSince1970: 1000)

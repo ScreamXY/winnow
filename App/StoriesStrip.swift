@@ -81,13 +81,18 @@ final class StoriesStrip: NSObject {
             }
             lastLoad = .now
             #if DEBUG
-                if let html = Self.fixtureHTML() {
+                if let html = Fixture.html("home") {
                     webView.loadHTMLString(html, baseURL: RoutePolicy.home)
                     return
                 }
             #endif
             webView.load(URLRequest(url: RoutePolicy.home))
         }
+    }
+
+    /// True while an Instagram page (or one loading) is in the strip.
+    var isLoaded: Bool {
+        webView.url?.scheme == "https"
     }
 
     /// Reloads when the tray is older than `age`, so new stories and seen rings show up.
@@ -98,9 +103,9 @@ final class StoriesStrip: NSObject {
     }
 
     /// Empties the strip, so no Instagram page runs in it, and removes the tray.
-    private func clear() {
+    func clear() {
         lastLoad = .distantPast
-        if let url = webView.url, url.scheme == "https" {
+        if isLoaded {
             webView.stopLoading()
             webView.loadHTMLString("", baseURL: nil)
         }
@@ -134,7 +139,7 @@ final class StoriesStrip: NSObject {
 
     /// Instagram opens a story in place (history.pushState). Move it to the main web view.
     private func addressChanged(_ url: URL?) {
-        guard let url, url.scheme == "https", url.path(percentEncoded: false).hasPrefix("/stories/") else {
+        guard let url, url.scheme == "https", StoryViewer.isStory(url) else {
             return
         }
         onOpen?(url)
@@ -172,17 +177,11 @@ final class StoriesStrip: NSObject {
         return path.isEmpty || path == "/"
     }
 
-    #if DEBUG
-        /// The test page for the tray, when UI tests run with `-WinnowFixture <name>`.
-        private static func fixtureHTML() -> String? {
-            guard UserDefaults.standard.string(forKey: "WinnowFixture") != nil,
-                let file = Bundle.main.url(forResource: "fixture-home", withExtension: "html")
-            else {
-                return nil
-            }
-            return try? String(contentsOf: file, encoding: .utf8)
-        }
-    #endif
+    /// Only story pages and tapped links may go from the strip to the main web view. A load or window
+    /// that a script on the hidden For You page starts on its own is dropped.
+    private static func mayForward(_ url: URL, _ action: WKNavigationAction) -> Bool {
+        url.scheme == "https" && (action.navigationType == .linkActivated || StoryViewer.isStory(url))
+    }
 }
 
 extension StoriesStrip: WKNavigationDelegate {
@@ -199,7 +198,7 @@ extension StoriesStrip: WKNavigationDelegate {
         // Only the home page loads here. A tapped link opens in the main web view. Other loads, such as
         // a redirect to the login page, are dropped: they must never take over the main web view.
         decisionHandler(.cancel)
-        if navigationAction.navigationType == .linkActivated || url.path(percentEncoded: false).hasPrefix("/stories/") {
+        if Self.mayForward(url, navigationAction) {
             onOpen?(url)
         }
     }
@@ -215,7 +214,7 @@ extension StoriesStrip: WKUIDelegate {
         _ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration,
         for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures
     ) -> WKWebView? {
-        if let url = navigationAction.request.url {
+        if let url = navigationAction.request.url, Self.mayForward(url, navigationAction) {
             onOpen?(url)
         }
         return nil

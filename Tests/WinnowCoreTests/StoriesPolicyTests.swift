@@ -39,4 +39,36 @@ import Testing
         }
         #expect(!StoriesPolicy.mayLoad(mainPage: nil, cookies: cookies))
     }
+
+    @Test func keepsTheTrayOnOtherPagesWhileLoggedIn() {
+        let cookies = [cookie("sessionid")]
+        let pages = [
+            "https://www.instagram.com/?variant=following",
+            "https://www.instagram.com/some.friend/",
+            "https://www.instagram.com/p/abc/",
+            "https://www.instagram.com/direct/inbox/",
+        ]
+        for page in pages {
+            #expect(StoriesPolicy.mayKeep(mainPage: URL(string: page)!, cookies: cookies), "\(page)")
+        }
+    }
+
+    @Test func unloadsTheTrayAfterLogoutAndOnAccountPages() {
+        #expect(!StoriesPolicy.mayKeep(mainPage: feed, cookies: []))
+        #expect(!StoriesPolicy.mayKeep(mainPage: feed, cookies: [cookie("csrftoken")]))
+        let cookies = [cookie("sessionid")]
+        let pages = [
+            "https://www.instagram.com/accounts/login/?next=%2F",
+            "https://www.instagram.com/accounts/logout/",
+            "https://www.instagram.com/accounts/onetap/?next=%2F",
+            "https://www.instagram.com/challenge/action/",
+            "https://www.instagram.com/auth_platform/codeentry/",
+            "https://www.facebook.com/",
+            "http://www.instagram.com/",
+        ]
+        for page in pages {
+            #expect(!StoriesPolicy.mayKeep(mainPage: URL(string: page)!, cookies: cookies), "\(page)")
+        }
+        #expect(!StoriesPolicy.mayKeep(mainPage: nil, cookies: cookies))
+    }
 }

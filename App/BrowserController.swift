@@ -96,7 +96,7 @@ final class BrowserController: NSObject {
         }
         hasStarted = true
         #if DEBUG
-            if let html = Self.fixtureHTML() {
+            if let name = Fixture.name, let html = Fixture.html(name) {
                 // A hand-written test page. The base URL makes the page script treat it as Instagram.
                 webView.loadHTMLString(html, baseURL: RoutePolicy.followingFeed)
                 return
@@ -104,19 +104,6 @@ final class BrowserController: NSObject {
         #endif
         load(settings.forceFollowing ? RoutePolicy.followingFeed : RoutePolicy.home)
     }
-
-    #if DEBUG
-        /// The test page named by the `-WinnowFixture <name>` launch argument (UI tests).
-        private static func fixtureHTML() -> String? {
-            guard let name = UserDefaults.standard.string(forKey: "WinnowFixture") else {
-                return nil
-            }
-            guard let file = Bundle.main.url(forResource: "fixture-\(name)", withExtension: "html") else {
-                return nil
-            }
-            return try? String(contentsOf: file, encoding: .utf8)
-        }
-    #endif
 
     func retry() {
         loadError = nil
@@ -191,6 +178,11 @@ final class BrowserController: NSObject {
         let decision = RoutePolicy.decide(url, settings: settings, userTappedLink: false)
         if case .redirect(let target) = decision, target != url {
             redirect(to: target)
+        }
+        if !StoriesPolicy.isFeed(url) {
+            // The feed layout belongs to the page before. Flick mode and the tray must not use it
+            // before the page script reports the new page.
+            layout = nil
         }
         storiesAddressChanged(url)
     }

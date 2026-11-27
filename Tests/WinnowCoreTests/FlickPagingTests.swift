@@ -77,6 +77,34 @@ import Testing
         #expect(target(at: 2000, velocity: -4, proposed: 0) == 1300)
     }
 
+    @Test func flickInsideALongPostNeverMovesAgainstItsDirection() {
+        // A long post (1000 high, 665 visible) at the top. The drag starts at 0 and moves 400 points,
+        // past the point where the end of the post shows (335). The flick must not jump back to 335.
+        let long = FeedLayout(
+            route: "home", posts: [.init(top: 0, height: 1000), .init(top: 1000, height: 600)], topInset: 0,
+            bottomInset: 0)
+        let forward = FlickPaging.target(
+            layout: long, scrollY: 400, proposedY: 1400, viewportHeight: 665, velocity: 2, dragStartY: 0)
+        #expect(forward == 1000)
+        // Tall post in the main layout (start 1300, end shown at 2100): a drag from its start that
+        // stays before the end still stops at the end.
+        let reading = FlickPaging.target(
+            layout: layout, scrollY: 1700, proposedY: 3000, viewportHeight: viewport, velocity: 2, dragStartY: 1300)
+        #expect(reading == 2100)
+        // A forward flick that would stop behind the finger stays where the finger lifted.
+        let short = FlickPaging.target(
+            layout: layout, scrollY: 1700, proposedY: 1600, viewportHeight: viewport, velocity: 0.3, dragStartY: 1300)
+        #expect(short == 1700)
+        // Back from inside the tall post, with a drag that already passed its start: the previous post.
+        let back = FlickPaging.target(
+            layout: layout, scrollY: 1250, proposedY: 0, viewportHeight: viewport, velocity: -2, dragStartY: 2000)
+        #expect(back == 700)
+        // Back inside the tall post: never further forward than where the finger lifted.
+        let backShort = FlickPaging.target(
+            layout: layout, scrollY: 1500, proposedY: 1600, viewportHeight: viewport, velocity: -0.3, dragStartY: 2000)
+        #expect(backShort == 1500)
+    }
+
     @Test func lastPostScrollsFreelySoMorePostsLoad() {
         #expect(target(at: 3400, velocity: 2) == nil)
     }

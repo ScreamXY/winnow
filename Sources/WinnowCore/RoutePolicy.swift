@@ -55,6 +55,15 @@ enum RoutePolicy {
         return decideInstagramPage(url, settings: settings)
     }
 
+    /// Decision for a new window (`target=_blank`, `window.open`). The app has no second window, so
+    /// an allowed page loads in place of the feed. That only makes sense for web pages: an empty
+    /// `about:blank` window or a `blob:` or `data:` address (saved media) is blocked.
+    static func decideNewWindow(_ url: URL, settings: FilterSettings) -> RouteDecision {
+        let decision = decide(url, settings: settings, userTappedLink: true)
+        let scheme = url.scheme?.lowercased() ?? ""
+        return decision == .allow && scheme != "http" && scheme != "https" ? .block : decision
+    }
+
     /// Decision for an Instagram address that is already in the app.
     static func decideInstagramPage(_ url: URL, settings: FilterSettings) -> RouteDecision {
         let path = normalizedPath(url)

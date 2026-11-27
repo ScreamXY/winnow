@@ -29,14 +29,33 @@ extension BrowserController {
         guard storiesEnabled, StoriesPolicy.isFeed(webView.url) else {
             return false
         }
-        #if DEBUG
-            // The UI test pages have no login.
-            if UserDefaults.standard.string(forKey: "WinnowFixture") != nil {
-                return true
-            }
-        #endif
+        if Fixture.name != nil {
+            return true
+        }
         let cookies = await webView.configuration.websiteDataStore.httpCookieStore.allCookies()
         return storiesEnabled && StoriesPolicy.mayLoad(mainPage: webView.url, cookies: cookies)
+    }
+
+    /// Unloads the strip when its page must not keep running: when the tray is switched off, on
+    /// login, account and challenge pages, and after logout. See `StoriesPolicy.mayKeep`. Reads the
+    /// cookies only when the address alone allows the strip.
+    private func unloadStoriesIfNeeded() {
+        guard stories.isLoaded, Fixture.name == nil else {
+            return
+        }
+        guard storiesEnabled, StoriesPolicy.mayKeep(on: webView.url) else {
+            stories.clear()
+            return
+        }
+        Task { @MainActor [weak self] in
+            guard let self else {
+                return
+            }
+            let cookies = await webView.configuration.websiteDataStore.httpCookieStore.allCookies()
+            if !StoriesPolicy.mayKeep(mainPage: webView.url, cookies: cookies) {
+                stories.clear()
+            }
+        }
     }
 
     func reloadStories() {
@@ -79,12 +98,13 @@ extension BrowserController {
         stories.place(frame: frame, clipTop: insetTop + layout.topInset * zoom, in: webView.bounds)
     }
 
-    /// Hides the tray away from the feed, and reloads it after a story was watched.
+    /// Hides the tray away from the feed, unloads it when it must not run, and reloads it after a
+    /// story was watched.
     func storiesAddressChanged(_ url: URL) {
-        let path = url.path(percentEncoded: false)
-        guard path.isEmpty || path == "/" else {
+        unloadStoriesIfNeeded()
+        guard StoriesPolicy.isFeed(url) else {
             stories.place(frame: nil, clipTop: 0, in: webView.bounds)
-            if path.hasPrefix("/stories/") {
+            if StoryViewer.isStory(url) {
                 visitedStories = true
             }
             return
@@ -130,6 +150,7 @@ extension BrowserController {
         }
     }
 
+    /// After `pageAddressChanged`, which already unloaded the strip if the tray is switched off.
     func storiesSettingsChanged() {
         if storiesEnabled, stories.trayHeight == 0 {
             stories.load()

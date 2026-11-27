@@ -30,6 +30,7 @@ final class WinnowUITests: XCTestCase {
         // The back arrow in the title leads to the "For you" feed, which Winnow never shows.
         XCTAssertFalse(web.images["Back"].exists)
         XCTAssertFalse(web.staticTexts["Post 4 by brand_account"].exists)
+        // Post 3 has the ad labels only in its caption and a comment, not in its header.
         XCTAssertTrue(web.staticTexts["Post 3 by friend_three"].exists)
     }
 

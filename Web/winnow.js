@@ -68,12 +68,24 @@
 
   // Page types. Only some need special rules.
   const routeOf = (path) => {
-    if (path === '/') return 'home';
-    if (path === '/explore/') return 'explore';
-    if (path.startsWith('/explore/')) return 'explore-detail';
-    if (path.startsWith('/reels/')) return 'reels';
-    if (/^\/([^/]+\/)?reel\//.test(path)) return 'reel';
-    if (path.startsWith('/direct/')) return 'direct';
+    if (path === '/') {
+      return 'home';
+    }
+    if (path === '/explore/') {
+      return 'explore';
+    }
+    if (path.startsWith('/explore/')) {
+      return 'explore-detail';
+    }
+    if (path.startsWith('/reels/')) {
+      return 'reels';
+    }
+    if (/^\/([^/]+\/)?reel\//.test(path)) {
+      return 'reel';
+    }
+    if (path.startsWith('/direct/')) {
+      return 'direct';
+    }
     return 'other';
   };
   const currentRoute = () =>
@@ -81,7 +93,9 @@
 
   const setFlag = (name, on) => {
     const root = document.documentElement;
-    if (!root) return;
+    if (!root) {
+      return;
+    }
     if (on) {
       root.setAttribute(name, '');
     } else {
@@ -91,7 +105,9 @@
 
   const applyFlags = () => {
     const root = document.documentElement;
-    if (!root) return;
+    if (!root) {
+      return;
+    }
     root.setAttribute('data-winnow-route', currentRoute());
     setFlag('data-winnow-hide-reels', config.hideReels);
     setFlag('data-winnow-hide-explore', config.hideExplore);
@@ -101,7 +117,9 @@
   };
 
   const ensureStyle = () => {
-    if (!boot.css || document.getElementById('winnow-style')) return;
+    if (!boot.css || document.getElementById('winnow-style')) {
+      return;
+    }
     const style = document.createElement('style');
     style.id = 'winnow-style';
     style.textContent = boot.css;
@@ -147,15 +165,40 @@
     return LANDMARKS.has(block.tagName) ? null : block;
   };
 
-  const hasExactText = (root, labels) => {
-    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
-    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
-      const text = node.nodeValue.trim();
-      if (text.length > 0 && text.length < 40 && labels.has(text)) {
-        return true;
+  // The first photo or video of a post: a picture at least half as wide as the post. The author's
+  // avatar in the header is much smaller.
+  const mediaOf = (article) => {
+    const width = article.getBoundingClientRect().width;
+    for (const element of article.querySelectorAll('img, video')) {
+      if (element.getBoundingClientRect().width >= width / 2) {
+        return element;
       }
     }
-    return false;
+    return null;
+  };
+
+  // The labels "Sponsored" and "Suggested for you" sit in the post header, next to the author. A
+  // caption or a comment may hold the same words (a German caption often starts with "Anzeige"), so
+  // only the header counts: everything before the first photo or video, or else the <header>
+  // element. Returns null while neither is found (for example before the media is laid out).
+  const headerTexts = (article) => {
+    const media = mediaOf(article);
+    const root = media ? article : article.querySelector('header');
+    if (!root) {
+      return null;
+    }
+    const texts = [];
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      if (media && !(media.compareDocumentPosition(node) & Node.DOCUMENT_POSITION_PRECEDING)) {
+        break;
+      }
+      const text = node.nodeValue.trim();
+      if (text.length > 0 && text.length < 40) {
+        texts.push(text);
+      }
+    }
+    return texts;
   };
 
   const textSeen = new WeakMap();
@@ -171,17 +214,25 @@
     // "Suggested for you" accounts always link to the full suggestions list.
     document.querySelectorAll('a[href^="/explore/people/"]').forEach((link) => {
       const block = blockOf(link);
-      if (block) mark(block, 'suggestion');
+      if (block) {
+        mark(block, 'suggestion');
+      }
     });
 
-    // Posts: check each post again only when its text changed.
+    // Posts: check each post again only when its text changed. Only the post header counts.
     document.querySelectorAll('article').forEach((article) => {
       const length = (article.textContent || '').length;
-      if (textSeen.get(article) === length) return;
+      if (textSeen.get(article) === length) {
+        return;
+      }
+      const texts = headerTexts(article);
+      if (!texts) {
+        return;
+      }
       textSeen.set(article, length);
-      if (hasExactText(article, SUGGESTED_LABELS)) {
+      if (texts.some((text) => SUGGESTED_LABELS.has(text))) {
         mark(article, 'suggestion');
-      } else if (hasExactText(article, SPONSORED_LABELS)) {
+      } else if (texts.some((text) => SPONSORED_LABELS.has(text))) {
         mark(article, 'sponsored');
       }
     });
@@ -193,10 +244,16 @@
         ? []
         : document.querySelectorAll('h2, h3, h4, span, div[role="heading"]');
     headings.forEach((heading) => {
-      if (heading.children.length > 0 || heading.closest('article, [data-winnow-hidden]')) return;
-      if (!SUGGESTED_LABELS.has((heading.textContent || '').trim())) return;
+      if (heading.children.length > 0 || heading.closest('article, [data-winnow-hidden]')) {
+        return;
+      }
+      if (!SUGGESTED_LABELS.has((heading.textContent || '').trim())) {
+        return;
+      }
       const block = blockOf(heading);
-      if (block) mark(block, 'suggestion');
+      if (block) {
+        mark(block, 'suggestion');
+      }
     });
 
     // Stop sound from the reels feed while the app leaves it.
@@ -228,9 +285,13 @@
   // removes the ones far above the screen, so the first post in the page is often not the first
   // post of the feed.
   const feedList = () => {
-    if (currentRoute() !== 'home') return null;
+    if (currentRoute() !== 'home') {
+      return null;
+    }
     const articles = topLevelArticles();
-    if (articles.length === 0) return null;
+    if (articles.length === 0) {
+      return null;
+    }
     let list = articles[0].parentElement;
     const last = articles[articles.length - 1];
     while (list && !list.contains(last)) {
@@ -256,7 +317,9 @@
   let lastRoomTop = null;
 
   const roomOf = (list) => {
-    if (!list) return null;
+    if (!list) {
+      return null;
+    }
     const rect = list.getBoundingClientRect();
     const space = parseFloat(getComputedStyle(list).marginTop) || 0;
     return { top: rect.top + window.scrollY - space, left: rect.left, width: rect.width };
@@ -293,7 +356,9 @@
 
   let scanTimer = null;
   const scheduleScan = () => {
-    if (scanTimer !== null) return;
+    if (scanTimer !== null) {
+      return;
+    }
     scanTimer = setTimeout(() => {
       scanTimer = null;
       scan();
@@ -304,13 +369,21 @@
   window.addEventListener(
     'click',
     (event) => {
-      if (!config.forceFollowing || event.defaultPrevented) return;
+      if (!config.forceFollowing || event.defaultPrevented) {
+        return;
+      }
       const link = event.target instanceof Element ? event.target.closest('a[href]') : null;
-      if (!link) return;
+      if (!link) {
+        return;
+      }
       const url = new URL(link.getAttribute('href'), location.href);
       const variant = url.searchParams.get('variant');
-      if (url.origin !== location.origin || url.pathname !== '/') return;
-      if (variant === 'following' || variant === 'favorites') return;
+      if (url.origin !== location.origin || url.pathname !== '/') {
+        return;
+      }
+      if (variant === 'following' || variant === 'favorites') {
+        return;
+      }
       event.preventDefault();
       event.stopImmediatePropagation();
       if (location.pathname === '/') {
@@ -326,7 +399,9 @@
   const fixedAncestor = (element) => {
     for (let node = element; node && node !== document.body; node = node.parentElement) {
       const position = getComputedStyle(node).position;
-      if (position === 'fixed' || position === 'sticky') return node;
+      if (position === 'fixed' || position === 'sticky') {
+        return node;
+      }
     }
     return null;
   };

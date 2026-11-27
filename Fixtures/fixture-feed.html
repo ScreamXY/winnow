@@ -3,7 +3,8 @@
   Hand-written test page for Winnow. It is NOT Instagram markup. It only copies the hooks the
   page script relies on: link targets (/reels/, /explore/people/), <main>, a list of <article>
   posts, a fixed header whose title links back to the "For you" feed, a fixed bottom bar, a modal
-  dialog (role="dialog", aria-modal) and the "Suggested for you" and "Sponsored" labels.
+  dialog (role="dialog", aria-modal) and the "Suggested for you" and "Sponsored" labels in post
+  headers (and the same words in a caption, which must not hide the post).
   Debug builds load it with `-WinnowFixture feed`; Release builds do not contain it.
 -->
 <html lang="en">
@@ -251,7 +252,10 @@
           <header><span>Post 3 by friend_three</span></header>
           <div class="media" style="background: #5a8c4a"></div>
           <div class="actions">♡ 💬</div>
-          <p class="caption">Third post.</p>
+          <!-- A followed account's caption may start with the ad label, and a comment may be exactly
+               the label. Only the post header counts, so this post stays. -->
+          <p class="caption">Anzeige<br />Third post.</p>
+          <p class="caption">Sponsored</p>
         </article>
 
         <article>

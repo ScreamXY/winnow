@@ -60,8 +60,8 @@ enum FlickPaging {
         let isFlick = abs(velocity) > flickVelocity
         guard
             let scroll = Scroll(
-                layout: layout, scrollY: isFlick ? dragStartY ?? scrollY : scrollY, proposedY: proposedY,
-                viewportHeight: viewportHeight)
+                layout: layout, fromY: isFlick ? dragStartY ?? scrollY : scrollY, scrollY: scrollY,
+                proposedY: proposedY, viewportHeight: viewportHeight)
         else {
             return nil
         }
@@ -72,10 +72,11 @@ enum FlickPaging {
     }
 }
 
-/// One finger lift: the posts and where the screen is now.
+/// One finger lift: the posts, where the flick counts from (`fromY`) and where the screen is now.
 private struct Scroll {
     let posts: [FeedLayout.Post]
     let layout: FeedLayout
+    let fromY: Double
     let scrollY: Double
     let proposedY: Double
     let viewportHeight: Double
@@ -84,21 +85,22 @@ private struct Scroll {
     let topLine: Double
     /// The line just above the bottom bar.
     let bottomLine: Double
-    /// The post at the top of the screen, or nil above the first post (stories).
+    /// The post at the top of the screen at `fromY`, or nil above the first post (stories).
     let current: Int?
 
-    init?(layout: FeedLayout, scrollY: Double, proposedY: Double, viewportHeight: Double) {
+    init?(layout: FeedLayout, fromY: Double, scrollY: Double, proposedY: Double, viewportHeight: Double) {
         posts = layout.posts.filter { $0.height > 1 }.sorted { $0.top < $1.top }
         visibleHeight = viewportHeight - layout.topInset - layout.bottomInset
         guard !posts.isEmpty, visibleHeight > 0 else {
             return nil
         }
         self.layout = layout
+        self.fromY = fromY
         self.scrollY = scrollY
         self.proposedY = proposedY
         self.viewportHeight = viewportHeight
-        topLine = scrollY + layout.topInset
-        bottomLine = scrollY + viewportHeight - layout.bottomInset
+        topLine = fromY + layout.topInset
+        bottomLine = fromY + viewportHeight - layout.bottomInset
         let line = topLine
         current = posts.lastIndex { $0.top <= line + FlickPaging.tolerance }
     }
@@ -128,9 +130,10 @@ private struct Scroll {
             return start(0)
         }
         let post = posts[index]
-        if isLong(post), post.bottom > bottomLine + tolerance {
-            // Keep reading the long post, but stop at its end.
-            return min(proposedY, endShown(post))
+        // Keep reading a long post, but stop at its end, and never move back. Once the drag itself
+        // showed the end, go on to the next post.
+        if isLong(post), post.bottom > bottomLine + tolerance, scrollY < endShown(post) - tolerance {
+            return max(scrollY, min(proposedY, endShown(post)))
         }
         // After the last loaded post, scroll freely so Instagram can load more.
         return index + 1 < posts.count ? start(index + 1) : nil
@@ -142,9 +145,13 @@ private struct Scroll {
             return nil
         }
         let post = posts[index]
-        if topLine > post.top + tolerance {
-            // Inside a post: go back to its start first.
-            return isLong(post) ? max(proposedY, start(index)) : start(index)
+        // Inside a post: go back to its start first. A long post scrolls freely back to its start,
+        // never forward; once the drag itself reached the start, go on to the previous post.
+        if topLine > post.top + tolerance, !isLong(post) {
+            return start(index)
+        }
+        if topLine > post.top + tolerance, scrollY > start(index) + tolerance {
+            return min(scrollY, max(proposedY, start(index)))
         }
         // At the first post, go back to the very top (stories).
         return index > 0 ? start(index - 1) : 0

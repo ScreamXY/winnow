@@ -36,7 +36,9 @@
     }`;
 
   const ensureStyle = () => {
-    if (document.getElementById('winnow-strip-style')) return;
+    if (document.getElementById('winnow-strip-style')) {
+      return;
+    }
     const style = document.createElement('style');
     style.id = 'winnow-strip-style';
     style.textContent = CSS;
@@ -56,7 +58,9 @@
     const items = new Set();
     document.querySelectorAll('a[href^="/stories/"]').forEach((el) => items.add(el));
     document.querySelectorAll('[aria-label]').forEach((el) => {
-      if (STORY_LABEL.test(el.getAttribute('aria-label') || '')) items.add(el);
+      if (STORY_LABEL.test(el.getAttribute('aria-label') || '')) {
+        items.add(el);
+      }
     });
     let found = [...items].filter(isNearTop);
     if (found.length < 2) {
@@ -71,27 +75,43 @@
 
   const commonAncestor = (a, b) => {
     const seen = new Set();
-    for (let n = a; n; n = n.parentElement) seen.add(n);
-    for (let n = b; n; n = n.parentElement) if (seen.has(n)) return n;
+    for (let n = a; n; n = n.parentElement) {
+      seen.add(n);
+    }
+    for (let n = b; n; n = n.parentElement) {
+      if (seen.has(n)) {
+        return n;
+      }
+    }
     return null;
   };
 
   const findTray = () => {
     const items = storyItems();
-    if (items.length < 2) return null;
+    if (items.length < 2) {
+      return null;
+    }
     const rowTop = items[0].getBoundingClientRect().top;
     const row = items.filter((el) => Math.abs(el.getBoundingClientRect().top - rowTop) < 12);
-    if (row.length < 2) return null;
+    if (row.length < 2) {
+      return null;
+    }
     let tray = commonAncestor(row[0], row[row.length - 1]);
     // Grow to the box that scrolls the row sideways, or else to the full-width row, but never into
     // a tall block. A row wider than the screen sits inside such a box: pinning the row itself
     // would take it out of the box, and it could no longer scroll.
     for (let n = tray; n && n !== document.body && n.tagName !== 'MAIN'; n = n.parentElement) {
       const r = n.getBoundingClientRect();
-      if (r.height > MAX_TRAY_HEIGHT) break;
+      if (r.height > MAX_TRAY_HEIGHT) {
+        break;
+      }
       tray = n;
-      if (/auto|scroll/.test(getComputedStyle(n).overflowX)) break;
-      if (Math.abs(r.width - window.innerWidth) <= 2) break;
+      if (/auto|scroll/.test(getComputedStyle(n).overflowX)) {
+        break;
+      }
+      if (Math.abs(r.width - window.innerWidth) <= 2) {
+        break;
+      }
     }
     return tray && tray !== document.body ? tray : null;
   };
@@ -102,7 +122,9 @@
   const update = () => {
     ensureStyle();
     if (!tray || !tray.isConnected) {
-      if (tray) tray.removeAttribute('data-winnow-tray');
+      if (tray) {
+        tray.removeAttribute('data-winnow-tray');
+      }
       tray = findTray();
       if (!tray) {
         document.documentElement.classList.remove('winnow-strip');
@@ -132,13 +154,17 @@
   const silence = () => {
     document.querySelectorAll('video').forEach((video) => {
       video.muted = true;
-      if (!video.paused) video.pause();
+      if (!video.paused) {
+        video.pause();
+      }
     });
   };
 
   let timer = null;
   const schedule = () => {
-    if (timer !== null) return;
+    if (timer !== null) {
+      return;
+    }
     timer = setTimeout(() => {
       timer = null;
       update();

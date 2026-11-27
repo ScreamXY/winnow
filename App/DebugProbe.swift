@@ -34,6 +34,10 @@
             }
         }
 
+        isolated deinit {
+            timer?.invalidate()
+        }
+
         private func poll() {
             var isFolder: ObjCBool = false
             if !FileManager.default.fileExists(atPath: folder.path(), isDirectory: &isFolder) || !isFolder.boolValue {

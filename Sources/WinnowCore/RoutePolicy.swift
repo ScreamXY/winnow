@@ -18,6 +18,12 @@ enum RoutePolicy {
     static let home = URL(string: "https://www.instagram.com/")!
     static let followingFeed = URL(string: "https://www.instagram.com/?variant=following")!
 
+    /// The feed the app opens and goes back to: the Following feed, or Instagram's home without
+    /// `forceFollowing`.
+    static func feed(for settings: FilterSettings) -> URL {
+        settings.forceFollowing ? followingFeed : home
+    }
+
     /// Feed variants that only show accounts the person chose.
     static let chosenFeedVariants: Set<String> = ["following", "favorites"]
 
@@ -76,7 +82,7 @@ enum RoutePolicy {
             if parts.count == 2, isMediaCode(parts[1]) {
                 return .redirect(URL(string: "https://www.instagram.com/reel/\(parts[1])/")!)
             }
-            return .redirect(settings.forceFollowing ? followingFeed : home)
+            return .redirect(feed(for: settings))
         }
         return .allow
     }

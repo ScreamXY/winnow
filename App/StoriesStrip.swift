@@ -3,8 +3,13 @@ import WebKit
 
 /// The stories tray above the Following feed. Instagram's Following page has no tray, so a second,
 /// small web view loads the home page, and `Web/stories.js` shows only its tray. Both web views
-/// share the login (same website data store). A tap on a story opens it above the feed
-/// (`StoryViewer`); other tapped links open in the main web view.
+/// share the login (same website data store).
+///
+/// A tapped story plays in this web view, in Instagram's own viewer, which knows the tray: it goes on
+/// to the next person and marks stories seen, like Instagram's app. While the page shows a story, the
+/// strip covers the whole feed (`isShowingStory`); when Instagram closes the story, it is the tray
+/// again. Nothing loads again, and the feed below keeps its place. Other tapped links open in the
+/// main web view.
 ///
 /// The strip loads only when `mayLoad` agrees (see `StoriesPolicy`): a load while the person is
 /// logged out changes the shared `csrftoken` cookie and breaks the login in the main web view.
@@ -17,8 +22,12 @@ final class StoriesStrip: NSObject {
     private(set) var trayHeight: CGFloat = 0
     /// Called when the tray height changes.
     var onTrayHeight: ((CGFloat) -> Void)?
-    /// Called with a tapped address, such as a story. The app decides where it opens.
+    /// Called with a tapped address that belongs in the main web view. The app decides where it opens.
     var onOpen: ((URL) -> Void)?
+    /// True while the page shows a story; the strip then covers the whole feed.
+    private(set) var isShowingStory = false
+    /// Called when a story opens or closes.
+    var onStoryChanged: ((Bool) -> Void)?
     /// How often iOS ended the strip's process (usually low memory).
     private(set) var processTerminations = 0
     /// Asked before every load. Returns false while a load is not safe (logged out, or the main
@@ -30,12 +39,15 @@ final class StoriesStrip: NSObject {
     /// Height used while the tray is not found yet, so Instagram lays out the page.
     private let searchHeight: CGFloat = 600
 
-    init(applicationName: String?) {
+    init(applicationName: String?, dataStore: WKWebsiteDataStore) {
         let configuration = WKWebViewConfiguration()
-        configuration.websiteDataStore = .default()
+        // The main web view's store: the strip needs the same login.
+        configuration.websiteDataStore = dataStore
         configuration.allowsInlineMediaPlayback = true
-        // The hidden For You posts must never start a video.
-        configuration.mediaTypesRequiringUserActionForPlayback = .all
+        // Stories play here and go on by themselves, so videos may start without a tap. The videos of
+        // the hidden For You posts are stopped the moment they start (`Web/stories.js`).
+        configuration.mediaTypesRequiringUserActionForPlayback = []
+        configuration.allowsPictureInPictureMediaPlayback = false
         configuration.applicationNameForUserAgent = applicationName
         webView = WKWebView(frame: CGRect(x: 0, y: 0, width: 390, height: 600), configuration: configuration)
         super.init()
@@ -95,9 +107,10 @@ final class StoriesStrip: NSObject {
         webView.url?.scheme == "https"
     }
 
-    /// Reloads when the tray is older than `age`, so new stories and seen rings show up.
+    /// Reloads when the tray is older than `age`, so new stories and seen rings show up. Never while
+    /// a story plays.
     func reloadIfOlder(than age: TimeInterval) {
-        if Date.now.timeIntervalSince(lastLoad) > age {
+        if !isShowingStory, Date.now.timeIntervalSince(lastLoad) > age {
             load()
         }
     }
@@ -109,11 +122,8 @@ final class StoriesStrip: NSObject {
             webView.stopLoading()
             webView.loadHTMLString("", baseURL: nil)
         }
-        guard trayHeight != 0 else {
-            return
-        }
-        trayHeight = 0
-        onTrayHeight?(0)
+        setShowingStory(false)
+        setTrayHeight(0)
     }
 
     /// Places the strip. All values are in the main web view's coordinates.
@@ -122,6 +132,10 @@ final class StoriesStrip: NSObject {
     ///   - clipTop: The bottom edge of Instagram's top bar; the strip is hidden above it.
     ///   - bounds: The main web view's bounds.
     func place(frame: CGRect?, clipTop: CGFloat, in bounds: CGRect) {
+        // A story fills the main web view; `setShowingStory` placed it.
+        guard !isShowingStory else {
+            return
+        }
         // Hidden while there is no tray, and while the tray is fully under Instagram's top bar or below
         // the screen: then nobody can see it, and VoiceOver must not find it either.
         guard let frame, trayHeight > 0, frame.maxY > clipTop, frame.minY < bounds.height else {
@@ -137,18 +151,63 @@ final class StoriesStrip: NSObject {
             x: frame.minX, y: frame.minY - clipTop, width: frame.width, height: trayHeight)
     }
 
-    /// Instagram opens a story in place (history.pushState). Move it to the main web view.
+    /// Instagram opens and closes a story in place (history.pushState); the address still changes.
     private func addressChanged(_ url: URL?) {
-        guard let url, url.scheme == "https", StoryViewer.isStory(url) else {
+        guard let url, url.scheme == "https" else {
             return
         }
-        onOpen?(url)
-        if webView.canGoBack {
-            webView.goBack()
-        } else {
-            // The tray loads again when the person comes back to the feed.
-            clear()
+        if StoriesPolicy.isStory(url) {
+            setShowingStory(true)
+            return
         }
+        if StoriesPolicy.isFeed(url) {
+            // Instagram closed the story. The page is the tray again.
+            setShowingStory(false)
+            return
+        }
+        // A link inside a story, such as the person's name, opened a page in place. It belongs in
+        // the main web view. Other pages that the hidden home page opens by itself stay hidden.
+        if isShowingStory {
+            forward(url)
+        }
+    }
+
+    /// A page opened from a story goes to the main web view, so the story must stop covering it. Goes
+    /// back to the tray in the history (Instagram closes its viewer), or loads the tray again.
+    private func leaveStory() {
+        guard isShowingStory else {
+            return
+        }
+        let tray = webView.backForwardList.backList.last { StoriesPolicy.isFeed($0.url) }
+        if let tray {
+            webView.go(to: tray)
+        } else {
+            setShowingStory(false)
+            load()
+        }
+    }
+
+    private func setShowingStory(_ showing: Bool) {
+        guard showing != isShowingStory else {
+            return
+        }
+        isShowingStory = showing
+        webView.scrollView.contentInsetAdjustmentBehavior = showing ? .automatic : .never
+        // A story fills the main web view, also when it changes size (rotation, Split View). Without
+        // a story, `place` sets the frames again.
+        let fill: UIView.AutoresizingMask = showing ? [.flexibleWidth, .flexibleHeight] : []
+        container.autoresizingMask = fill
+        webView.autoresizingMask = fill
+        if showing, let bounds = container.superview?.bounds {
+            container.isHidden = false
+            container.frame = bounds
+            webView.frame = CGRect(origin: .zero, size: bounds.size)
+        }
+        // Show the whole page (or only the tray again) right away, not at the script's next check.
+        webView.evaluateJavaScript(
+            "window.__winnowStrip && window.__winnowStrip.update()", in: nil, in: .defaultClient
+        ) { _ in }
+        onStoryChanged?(showing)
     }
 
     fileprivate func received(_ body: Any) {
@@ -157,12 +216,17 @@ final class StoriesStrip: NSObject {
         }
         let found = message["found"] as? Bool ?? false
         let height = CGFloat((message["height"] as? NSNumber)?.doubleValue ?? 0)
-        let newHeight = found ? height : 0
-        guard newHeight != trayHeight else {
+        // A page that is still loading reports nothing until its search for the tray is over
+        // (`Web/stories.js`), so the room above the feed stays during a reload.
+        setTrayHeight(found ? height : 0)
+    }
+
+    private func setTrayHeight(_ height: CGFloat) {
+        guard height != trayHeight else {
             return
         }
-        trayHeight = newHeight
-        onTrayHeight?(newHeight)
+        trayHeight = height
+        onTrayHeight?(height)
     }
 
     private static func scriptSource() -> String? {
@@ -172,15 +236,23 @@ final class StoriesStrip: NSObject {
         return try? String(contentsOf: url, encoding: .utf8)
     }
 
+    /// The home page on any https host. The navigation policy uses it, so a page from another host
+    /// with the path "/" loads here as before.
     private static func isHome(_ url: URL) -> Bool {
         let path = url.path(percentEncoded: false)
         return path.isEmpty || path == "/"
     }
 
-    /// Only story pages and tapped links may go from the strip to the main web view. A load or window
-    /// that a script on the hidden For You page starts on its own is dropped.
-    private static func mayForward(_ url: URL, _ action: WKNavigationAction) -> Bool {
-        url.scheme == "https" && (action.navigationType == .linkActivated || StoryViewer.isStory(url))
+    /// Only tapped links and pages opened from a story may go from the strip to the main web view. A
+    /// load or window that a script on the hidden For You page starts on its own is dropped.
+    private func mayForward(_ url: URL, _ action: WKNavigationAction) -> Bool {
+        url.scheme == "https" && (action.navigationType == .linkActivated || isShowingStory)
+    }
+
+    /// Opens a page from the strip in the main web view and ends a story that would cover it.
+    private func forward(_ url: URL) {
+        leaveStory()
+        onOpen?(url)
     }
 }
 
@@ -190,21 +262,23 @@ extension StoriesStrip: WKNavigationDelegate {
         decisionHandler: @escaping @MainActor (WKNavigationActionPolicy) -> Void
     ) {
         guard let url = navigationAction.request.url, navigationAction.targetFrame?.isMainFrame == true,
-            url.scheme == "https", !Self.isHome(url)
+            url.scheme == "https", !Self.isHome(url), !StoriesPolicy.isStory(url)
         else {
             decisionHandler(.allow)
             return
         }
-        // Only the home page loads here. A tapped link opens in the main web view. Other loads, such as
-        // a redirect to the login page, are dropped: they must never take over the main web view.
+        // Only the home page and stories load here. A tapped link opens in the main web view. Other
+        // loads, such as a redirect to the login page, are dropped: they must never take over the main
+        // web view.
         decisionHandler(.cancel)
-        if Self.mayForward(url, navigationAction) {
-            onOpen?(url)
+        if mayForward(url, navigationAction) {
+            forward(url)
         }
     }
 
     func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
         processTerminations += 1
+        setShowingStory(false)
         load()
     }
 }
@@ -214,8 +288,8 @@ extension StoriesStrip: WKUIDelegate {
         _ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration,
         for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures
     ) -> WKWebView? {
-        if let url = navigationAction.request.url, Self.mayForward(url, navigationAction) {
-            onOpen?(url)
+        if let url = navigationAction.request.url, mayForward(url, navigationAction) {
+            forward(url)
         }
         return nil
     }

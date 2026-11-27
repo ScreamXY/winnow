@@ -115,9 +115,11 @@ import Testing
         #expect(FilterSettings(defaults: defaults) == FilterSettings())
         defaults.set(false, forKey: FilterSettings.Key.hideSponsored)
         defaults.set(false, forKey: FilterSettings.Key.flickMode)
+        defaults.set(false, forKey: FilterSettings.Key.hideSeen)
         let changed = FilterSettings(defaults: defaults)
         #expect(!changed.hideSponsored)
         #expect(!changed.flickMode)
+        #expect(!changed.hideSeen)
         #expect(changed.forceFollowing)
         #expect(changed.showStories)
     }
@@ -126,5 +128,6 @@ import Testing
         let literal = FilterSettings().javaScriptLiteral()
         #expect(literal.contains("\"forceFollowing\":true"))
         #expect(literal.contains("\"hideSponsored\":true"))
+        #expect(literal.contains("\"hideSeen\":true"))
     }
 }

@@ -71,4 +71,13 @@ import Testing
         }
         #expect(!StoriesPolicy.mayKeep(mainPage: nil, cookies: cookies))
     }
+
+    @Test func recognizesStoryPages() {
+        #expect(StoriesPolicy.isStory(URL(string: "https://www.instagram.com/stories/some.friend/123/")!))
+        #expect(StoriesPolicy.isStory(URL(string: "https://instagram.com/stories/some.friend/")!))
+        #expect(!StoriesPolicy.isStory(URL(string: "https://www.instagram.com/some.friend/")!))
+        #expect(!StoriesPolicy.isStory(URL(string: "https://www.instagram.com/")!))
+        #expect(!StoriesPolicy.isStory(URL(string: "https://www.example.com/stories/x/")!))
+        #expect(!StoriesPolicy.isStory(nil))
+    }
 }

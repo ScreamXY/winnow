@@ -3,8 +3,9 @@
   Hand-written test page for Winnow. It is NOT Instagram markup. It only copies the hooks the
   page script relies on: link targets (/reels/, /explore/people/), <main>, a list of <article>
   posts, a fixed header whose title links back to the "For you" feed, a fixed bottom bar, a modal
-  dialog (role="dialog", aria-modal) and the "Suggested for you" and "Sponsored" labels in post
-  headers (and the same words in a caption, which must not hide the post).
+  dialog (role="dialog", aria-modal), the "Suggested for you" and "Sponsored" labels in post
+  headers (and the same words in a caption, which must not hide the post), and a link to each post
+  around its time (/p/<code>/), which marks posts as seen.
   Debug builds load it with `-WinnowFixture feed`; Release builds do not contain it.
 -->
 <html lang="en">
@@ -228,14 +229,18 @@
             </button>
           </header>
           <div class="media" style="background: #4a7c8c"></div>
-          <div class="actions">♡ 💬</div>
+          <div class="actions">
+            ♡ 💬 <a href="/p/fixture-post-1/"><time>1h</time></a>
+          </div>
           <p class="caption">First post from someone I follow.</p>
         </article>
 
         <article>
           <header><span>Post 2 by friend_two</span></header>
           <div class="media" style="background: #8c6a4a"></div>
-          <div class="actions">♡ 💬</div>
+          <div class="actions">
+            ♡ 💬 <a href="/p/fixture-post-2/"><time>2h</time></a>
+          </div>
           <p class="caption">Second post.</p>
         </article>
 
@@ -251,7 +256,9 @@
         <article>
           <header><span>Post 3 by friend_three</span></header>
           <div class="media" style="background: #5a8c4a"></div>
-          <div class="actions">♡ 💬</div>
+          <div class="actions">
+            ♡ 💬 <a href="/p/fixture-post-3/"><time>3h</time></a>
+          </div>
           <!-- A followed account's caption may start with the ad label, and a comment may be exactly
                the label. Only the post header counts, so this post stays. -->
           <p class="caption">Anzeige<br />Third post.</p>
@@ -264,28 +271,36 @@
             <span>Sponsored</span>
           </header>
           <div class="media" style="background: #8c4a7a"></div>
-          <div class="actions">♡ 💬</div>
+          <div class="actions">
+            ♡ 💬 <a href="/p/fixture-post-4/"><time>4h</time></a>
+          </div>
           <p class="caption">An ad.</p>
         </article>
 
         <article>
           <header><span>Post 5 by friend_five</span></header>
           <div class="media tall" style="background: #4a5a8c"></div>
-          <div class="actions">♡ 💬</div>
+          <div class="actions">
+            ♡ 💬 <a href="/p/fixture-post-5/"><time>5h</time></a>
+          </div>
           <p class="caption">A tall post, taller than the screen.</p>
         </article>
 
         <article>
           <header><span>Post 6 by friend_six</span></header>
           <div class="media" style="background: #8c8a4a"></div>
-          <div class="actions">♡ 💬</div>
+          <div class="actions">
+            ♡ 💬 <a href="/p/fixture-post-6/"><time>6h</time></a>
+          </div>
           <p class="caption">Sixth post.</p>
         </article>
 
         <article>
           <header><span>Post 7 by friend_seven</span></header>
           <div class="media" style="background: #4a8c86"></div>
-          <div class="actions">♡ 💬</div>
+          <div class="actions">
+            ♡ 💬 <a href="/p/fixture-post-7/"><time>7h</time></a>
+          </div>
           <p class="caption">Seventh post.</p>
         </article>
       </div>

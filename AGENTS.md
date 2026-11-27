@@ -18,10 +18,19 @@ flick in the home feed.
 - Instagram's Following page has no stories tray. `StoriesStrip` loads the home page in a second,
   small web view and `Web/stories.js` shows only the tray; the main page makes room above the list
   of posts (`setStoriesSpace`, a margin on `[data-winnow-feed]`). Never put the room on a post:
-  Instagram removes posts far above the screen, and the room would move down the feed. The strip
-  must never start a video or make sound, and only story pages and tapped links may go from the
-  strip to the main web view. A tapped story opens in `StoryViewer` above the feed, so the feed
-  keeps its place.
+  Instagram removes posts far above the screen, and the room would move down the feed. A tapped
+  story plays in the strip itself: Instagram's own viewer knows the tray, so it goes on to the next
+  person and marks stories seen. While the strip's page shows `/stories/…`, the strip covers the
+  feed (`isShowingStory`); when Instagram closes the story, it is the tray again, with no reload,
+  and the feed keeps its place. Outside a story, the strip must never play a video or make sound
+  (`Web/stories.js` stops each one as it starts), and only tapped links and pages opened from a
+  story may go from the strip to the main web view. While a reload looks for the tray, keep the
+  old room, so the feed does not jump.
+- The Home tab goes back in the history to the feed (`FeedHistory`) and loads the feed only when
+  it is not in the history; a new load starts the feed at the top again.
+- "Hide posts I have seen" (`hideSeen`): posts scrolled past in the home feed are kept as post
+  codes in the page's `localStorage` (`winnow.seenPosts`, 30 days) and hidden from the next page
+  load on. Posts seen since the current load stay visible.
 - The strip loads only after login and only while the main web view shows the feed
   (`StoriesPolicy`). Both web views share one cookie store: a load of Instagram while logged out
   replaces the `csrftoken` cookie, and the login form then fails. Check the login by the name of

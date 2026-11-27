@@ -1,7 +1,12 @@
 // Winnow stories strip. The app loads Instagram's home page in a second, small web view and injects
 // this script. It finds the stories tray, pins it to the top and hides everything else, so the
 // strip shows only the tray. The For You posts on that page are never shown and their videos are
-// paused and muted. Tapping a story is handled by the app, which opens it in the main web view.
+// paused and muted.
+//
+// A tapped story plays right here, in Instagram's own story viewer: it knows the tray, so it goes on
+// to the next person's stories and marks them seen. While the page shows a story (/stories/…), this
+// script shows the whole page and lets videos play, and the app grows the strip to the full screen.
+// When Instagram closes the viewer, the page is back on the tray.
 //
 // The tray has no stable name, so it is found by its parts: story links (/stories/…), elements whose
 // label mentions a story, or round avatar canvases, in one row near the top of the page.
@@ -48,6 +53,8 @@
   const STORY_LABEL = /\bstor(y|ys|ies|ia|ie)\b/i;
   const MAX_TOP = 400;
   const MAX_TRAY_HEIGHT = 220;
+
+  const onStory = () => location.pathname.startsWith('/stories/');
 
   const isNearTop = (el) => {
     const r = el.getBoundingClientRect();
@@ -118,9 +125,27 @@
 
   let tray = null;
   let reported = -1;
+  // A page that is still loading has no tray yet. "No tray" is only reported once the page has
+  // loaded and had a few seconds to draw it, so the app keeps the room above the feed during a reload.
+  const SEARCH_TIME = 5000;
+  let searchOver = false;
+  window.addEventListener(
+    'load',
+    () =>
+      setTimeout(() => {
+        searchOver = true;
+        update();
+      }, SEARCH_TIME),
+    { once: true },
+  );
 
   const update = () => {
     ensureStyle();
+    if (onStory()) {
+      // Instagram's story viewer. Show it all; the tray is reported again after the story.
+      document.documentElement.classList.remove('winnow-strip');
+      return;
+    }
     if (!tray || !tray.isConnected) {
       if (tray) {
         tray.removeAttribute('data-winnow-tray');
@@ -128,7 +153,7 @@
       tray = findTray();
       if (!tray) {
         document.documentElement.classList.remove('winnow-strip');
-        if (reported !== 0) {
+        if (searchOver && reported !== 0) {
           reported = 0;
           post({ type: 'tray', found: false, height: 0 });
         }
@@ -141,8 +166,9 @@
       tray.setAttribute('data-winnow-tray', '');
       const background = getComputedStyle(document.body).backgroundColor;
       document.documentElement.style.setProperty('--winnow-strip-bg', background);
-      document.documentElement.classList.add('winnow-strip');
     }
+    // Also after a story: the tray may still be the same element.
+    document.documentElement.classList.add('winnow-strip');
     const height = Math.round(tray.getBoundingClientRect().height);
     if (height !== reported) {
       reported = height;
@@ -150,15 +176,32 @@
     }
   };
 
-  // Videos of the hidden posts must never play or make sound.
-  const silence = () => {
-    document.querySelectorAll('video').forEach((video) => {
-      video.muted = true;
-      if (!video.paused) {
-        video.pause();
-      }
-    });
+  // Videos of the hidden posts must never play or make sound. Story videos may.
+  const quiet = (media) => {
+    media.muted = true;
+    if (!media.paused) {
+      media.pause();
+    }
   };
+  const silence = () => {
+    if (onStory()) {
+      return;
+    }
+    document.querySelectorAll('video, audio').forEach(quiet);
+  };
+  // Stops a video of the hidden posts the moment it starts, not only at the next check.
+  ['play', 'playing'].forEach((type) => {
+    document.addEventListener(
+      type,
+      (event) => {
+        const media = event.target;
+        if (!onStory() && media && (media.tagName === 'VIDEO' || media.tagName === 'AUDIO')) {
+          quiet(media);
+        }
+      },
+      true,
+    );
+  });
 
   let timer = null;
   const schedule = () => {
@@ -173,6 +216,7 @@
   };
 
   const describe = () => ({
+    story: onStory(),
     found: !!tray,
     height: reported,
     items: storyItems().length,
@@ -187,7 +231,6 @@
       childList: true,
       subtree: true,
     });
-    setInterval(silence, 1000);
   };
 
   if (document.documentElement) {

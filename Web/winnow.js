@@ -27,6 +27,7 @@
       hideExplore: true,
       hideSuggestions: true,
       hideSponsored: true,
+      hideSeen: true,
       flickMode: true,
     },
     boot.config || {},
@@ -58,11 +59,14 @@
   // A hidden block must stay small. A bigger block would likely hide real content.
   const MAX_BLOCK_TEXT = 1500;
 
+  // Returns false when the app is not there to receive the message.
   const post = (message) => {
     try {
       window.webkit.messageHandlers.winnow.postMessage(message);
+      return true;
     } catch (_) {
       // Not running inside the app (for example in a desktop browser while testing).
+      return false;
     }
   };
 
@@ -113,6 +117,7 @@
     setFlag('data-winnow-hide-explore', config.hideExplore);
     setFlag('data-winnow-hide-suggestions', config.hideSuggestions);
     setFlag('data-winnow-hide-sponsored', config.hideSponsored);
+    setFlag('data-winnow-hide-seen', config.hideSeen);
     setFlag('data-winnow-force-following', config.forceFollowing);
   };
 
@@ -203,6 +208,70 @@
 
   const textSeen = new WeakMap();
 
+  // Posts the person scrolled past in the home feed. They are hidden from the next page load on, so
+  // the feed starts with new posts and goes on where the person stopped. Posts seen since this load
+  // stay, so scrolling back up still works. Only post codes and a day number are kept, in the page's
+  // own storage on the device.
+  const SEEN_KEY = 'winnow.seenPosts';
+  const SEEN_DAYS = 30;
+  const SEEN_MAX = 3000;
+  const POST_LINK = /^\/(?:[^/]+\/)?(?:p|reel)\/([A-Za-z0-9_-]+)\/?/;
+  const today = () => Math.floor(Date.now() / 86400000);
+  // Read once per page load. Entries older than SEEN_DAYS are dropped here, so they never count.
+  const readSeen = () => {
+    try {
+      const value = JSON.parse(localStorage.getItem(SEEN_KEY) || '{}');
+      if (!value || typeof value !== 'object' || Array.isArray(value)) {
+        return {};
+      }
+      const oldest = today() - SEEN_DAYS;
+      return Object.fromEntries(
+        Object.entries(value).filter(([, day]) => typeof day === 'number' && day >= oldest),
+      );
+    } catch (_) {
+      return {};
+    }
+  };
+  const seenPosts = readSeen();
+  const seenBefore = new Set(Object.keys(seenPosts));
+  const saveSeen = () => {
+    const entries = Object.entries(seenPosts);
+    if (entries.length > SEEN_MAX) {
+      // Keep the newest; forget the rest.
+      entries
+        .sort((a, b) => b[1] - a[1])
+        .slice(SEEN_MAX)
+        .forEach(([code]) => delete seenPosts[code]);
+    }
+    try {
+      localStorage.setItem(SEEN_KEY, JSON.stringify(seenPosts));
+    } catch (_) {
+      // Storage is full or blocked. The feed still works; seen posts stay visible.
+    }
+  };
+
+  // The post's own address, from its link to the post (the one around the time, if there is one).
+  // A post element keeps its address, so it is looked up once.
+  const postCodes = new WeakMap();
+  const postCode = (article) => {
+    if (postCodes.has(article)) {
+      return postCodes.get(article);
+    }
+    const time = article.querySelector('a[href] time');
+    const links = [
+      time && time.closest('a[href]'),
+      ...article.querySelectorAll('a[href*="/p/"], a[href*="/reel/"]'),
+    ];
+    for (const link of links) {
+      const match = link && POST_LINK.exec(link.getAttribute('href') || '');
+      if (match) {
+        postCodes.set(article, match[1]);
+        return match[1];
+      }
+    }
+    return null;
+  };
+
   const scan = () => {
     ensureStyle();
     applyFlags();
@@ -219,8 +288,26 @@
       }
     });
 
+    // Posts seen before this page load.
+    let hidSeen = false;
+    if (config.hideSeen && seenBefore.size > 0 && currentRoute() === 'home') {
+      topLevelArticles().forEach((article) => {
+        if (article.hasAttribute('data-winnow-hidden')) {
+          return;
+        }
+        const code = postCode(article);
+        if (code && seenBefore.has(code)) {
+          mark(article, 'seen');
+          hidSeen = true;
+        }
+      });
+    }
+
     // Posts: check each post again only when its text changed. Only the post header counts.
     document.querySelectorAll('article').forEach((article) => {
+      if (article.getAttribute('data-winnow-hidden') === 'seen') {
+        return;
+      }
       const length = (article.textContent || '').length;
       if (textSeen.get(article) === length) {
         return;
@@ -273,6 +360,11 @@
     });
 
     markFeed();
+
+    if (hidSeen) {
+      // Instagram loads more posts when the end of the list comes near; hidden posts brought it nearer.
+      window.dispatchEvent(new Event('scroll'));
+    }
   };
 
   const topLevelArticles = () =>
@@ -388,7 +480,9 @@
       event.stopImmediatePropagation();
       if (location.pathname === '/') {
         window.scrollTo({ top: 0, behavior: 'smooth' });
-      } else {
+      } else if (!post({ type: 'home' })) {
+        // The app goes back to the feed in the history, so the feed keeps its place. A new load
+        // starts at the top; it is only the fallback outside the app.
         location.assign('/?variant=following');
       }
     },
@@ -405,15 +499,61 @@
     }
     return null;
   };
+  const topInset = () => {
+    const top = fixedAncestor(document.elementFromPoint(Math.round(window.innerWidth / 2), 1));
+    return top ? Math.max(0, top.getBoundingClientRect().bottom) : 0;
+  };
   const chromeInsets = () => {
     const x = Math.round(window.innerWidth / 2);
-    const top = fixedAncestor(document.elementFromPoint(x, 1));
     const bottom = fixedAncestor(document.elementFromPoint(x, window.innerHeight - 2));
     return {
-      top: top ? Math.max(0, top.getBoundingClientRect().bottom) : 0,
+      top: topInset(),
       bottom: bottom ? Math.max(0, window.innerHeight - bottom.getBoundingClientRect().top) : 0,
     };
   };
+
+  // A post counts as seen once its end went above the top bar. Checked at most once a second while
+  // the page scrolls; each post is recorded once per page load.
+  const recorded = new WeakSet();
+  const recordSeen = () => {
+    if (!config.hideSeen || currentRoute() !== 'home') {
+      return;
+    }
+    const top = topInset();
+    let changed = false;
+    topLevelArticles().forEach((article) => {
+      if (recorded.has(article) || article.hasAttribute('data-winnow-hidden')) {
+        return;
+      }
+      const rect = article.getBoundingClientRect();
+      if (rect.height <= 40 || rect.bottom > top + 4) {
+        return;
+      }
+      const code = postCode(article);
+      if (code) {
+        recorded.add(article);
+        seenPosts[code] = today();
+        changed = true;
+      }
+    });
+    if (changed) {
+      saveSeen();
+    }
+  };
+  let seenTimer = null;
+  window.addEventListener(
+    'scroll',
+    (event) => {
+      if (!event.isTrusted || seenTimer !== null) {
+        return;
+      }
+      seenTimer = setTimeout(() => {
+        seenTimer = null;
+        recordSeen();
+      }, 1000);
+    },
+    { passive: true },
+  );
 
   // Post positions for flick mode. The app asks for this when a drag starts.
   const layout = () => {

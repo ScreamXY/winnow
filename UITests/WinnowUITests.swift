@@ -35,10 +35,20 @@ final class WinnowUITests: XCTestCase {
     }
 
     @MainActor
+    func testHidesPostsSeenBeforeThePageLoaded() {
+        let web = launch(["-WinnowSeenPosts", "fixture-post-2,fixture-post-6"])
+        XCTAssertFalse(web.staticTexts["Post 2 by friend_two"].exists)
+        XCTAssertFalse(web.staticTexts["Post 6 by friend_six"].exists)
+        XCTAssertTrue(web.staticTexts["Post 3 by friend_three"].exists)
+    }
+
+    @MainActor
     func testSwitchesInSettingsChangeWhatIsHidden() {
         let web = launch([
             "-hide_sponsored", "NO", "-hide_reels", "NO", "-hide_suggestions", "NO", "-force_following", "NO",
+            "-hide_seen", "NO", "-WinnowSeenPosts", "fixture-post-2",
         ])
+        XCTAssertTrue(web.staticTexts["Post 2 by friend_two"].exists)
         XCTAssertTrue(web.staticTexts["Post 4 by brand_account"].exists)
         XCTAssertTrue(web.images["Back"].exists)
         XCTAssertTrue(web.links["Reels"].exists)
@@ -130,6 +140,36 @@ final class WinnowUITests: XCTestCase {
             waitForScrollToStop()
         }
         XCTAssertTrue(last.isHittable, "The tray did not scroll sideways")
+    }
+
+    @MainActor
+    func testStoriesPlayInPlaceAndTheFeedKeepsItsPlace() {
+        let web = launch()
+        let app = XCUIApplication()
+        let story = app.buttons["Story by tray_one, not seen"]
+        XCTAssertTrue(story.waitForExistence(timeout: 20), "The tray did not appear")
+        XCTAssertTrue(wait { story.isHittable }, "The tray is not placed")
+        let firstPost = web.staticTexts["Post 1 by friend_one"]
+        let postTop = firstPost.frame.minY
+
+        story.tap()
+        // The strip grows over the whole feed and shows Instagram's own story viewer.
+        let title = app.staticTexts["Story of tray_one"]
+        XCTAssertTrue(title.waitForExistence(timeout: 10), "The story did not open")
+        XCTAssertTrue(wait { title.isHittable }, "The story is not on screen")
+        let viewer = app.otherElements["Story viewer"]
+        XCTAssertTrue(viewer.exists)
+        XCTAssertEqual(viewer.frame.width, web.frame.width, accuracy: 2, "The story does not fill the screen")
+        XCTAssertGreaterThan(viewer.frame.height, web.frame.height * 0.8, "The story does not fill the screen")
+
+        // The viewer goes on to the next person without loading anything again.
+        app.buttons["Next story"].tap()
+        XCTAssertTrue(app.staticTexts["Story of tray_two"].waitForExistence(timeout: 5))
+
+        app.buttons["Close story"].tap()
+        XCTAssertTrue(wait { !viewer.exists || !viewer.isHittable }, "The story did not close")
+        XCTAssertTrue(wait { story.exists && story.isHittable }, "The tray did not come back")
+        XCTAssertEqual(firstPost.frame.minY, postTop, accuracy: 2, "The feed moved")
     }
 
     @MainActor

@@ -14,6 +14,8 @@ struct FilterSettings: Equatable, Sendable, Codable {
     var hideSuggestions = true
     /// Hide sponsored posts. Ads are chosen by the algorithm too.
     var hideSponsored = true
+    /// Hide posts the person scrolled past before the page loaded, so the feed starts with new posts.
+    var hideSeen = true
     /// Move one post per flick in the home feed.
     var flickMode = true
     /// Show the stories tray above the Following feed (it loads Instagram's home page in the background).
@@ -25,6 +27,7 @@ struct FilterSettings: Equatable, Sendable, Codable {
         static let hideExplore = "hide_explore"
         static let hideSuggestions = "hide_suggestions"
         static let hideSponsored = "hide_sponsored"
+        static let hideSeen = "hide_seen"
         static let flickMode = "flick_mode"
         static let showStories = "show_stories"
     }
@@ -38,6 +41,7 @@ struct FilterSettings: Equatable, Sendable, Codable {
         hideExplore = defaults.bool(forKey: Key.hideExplore)
         hideSuggestions = defaults.bool(forKey: Key.hideSuggestions)
         hideSponsored = defaults.bool(forKey: Key.hideSponsored)
+        hideSeen = defaults.bool(forKey: Key.hideSeen)
         flickMode = defaults.bool(forKey: Key.flickMode)
         showStories = defaults.bool(forKey: Key.showStories)
     }
@@ -50,6 +54,7 @@ struct FilterSettings: Equatable, Sendable, Codable {
             Key.hideExplore: fallback.hideExplore,
             Key.hideSuggestions: fallback.hideSuggestions,
             Key.hideSponsored: fallback.hideSponsored,
+            Key.hideSeen: fallback.hideSeen,
             Key.flickMode: fallback.flickMode,
             Key.showStories: fallback.showStories,
         ]

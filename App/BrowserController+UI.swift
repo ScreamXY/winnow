@@ -82,8 +82,32 @@ extension BrowserController {
         }
         if type == "layoutChanged" {
             refreshLayout()
+        } else if type == "home" {
+            goHome()
         }
         log.debug("Page script: \(type, privacy: .public) \(String(describing: message["route"]), privacy: .public)")
+    }
+}
+
+// MARK: - The Home tab
+
+extension BrowserController {
+    /// The Home tab: back to the feed in the history, or a new load of the feed.
+    func goHome() {
+        if !goBackToFeed() {
+            load(RoutePolicy.feed(for: settings))
+        }
+    }
+
+    /// Goes back to the newest feed entry in the history (`FeedHistory`). Returns false when there is
+    /// none.
+    func goBackToFeed() -> Bool {
+        let backList = webView.backForwardList.backList
+        guard let index = FeedHistory.feedEntry(in: backList.map(\.url), settings: settings) else {
+            return false
+        }
+        webView.go(to: backList[index])
+        return true
     }
 }
 

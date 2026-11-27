@@ -48,6 +48,11 @@ html[data-winnow-hide-suggestions] [data-winnow-hidden='suggestion'] {
   display: none !important;
 }
 
+/* Posts the person scrolled past before this page load (see "seen posts" in winnow.js). */
+html[data-winnow-hide-seen][data-winnow-route='home'] [data-winnow-hidden='seen'] {
+  display: none !important;
+}
+
 /* Sponsored posts. */
 html[data-winnow-hide-sponsored] [data-winnow-hidden='sponsored'] {
   display: none !important;

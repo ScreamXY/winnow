@@ -3,7 +3,7 @@ import WebKit
 
 // The stories tray above the Following feed. `StoriesStrip` loads the tray; this extension makes room
 // for it above the list of posts (`setStoriesSpace` in `Web/winnow.js`) and moves it with the feed.
-// A tapped story opens in a `StoryViewer` above the feed, so the feed keeps its place.
+// A tapped story plays in the strip, which then covers the feed; the feed below keeps its place.
 
 extension BrowserController {
     /// The tray belongs to the Following feed; without that feed, Instagram's own home has a tray.
@@ -18,6 +18,9 @@ extension BrowserController {
         }
         stories.onOpen = { [weak self] url in
             self?.openFromStories(url)
+        }
+        stories.onStoryChanged = { [weak self] showing in
+            self?.storyChanged(showing)
         }
         stories.mayLoad = { [weak self] in
             await self?.storiesMayLoad() ?? false
@@ -104,7 +107,7 @@ extension BrowserController {
         unloadStoriesIfNeeded()
         guard StoriesPolicy.isFeed(url) else {
             stories.place(frame: nil, clipTop: 0, in: webView.bounds)
-            if StoryViewer.isStory(url) {
+            if StoriesPolicy.isStory(url) {
                 visitedStories = true
             }
             return
@@ -126,27 +129,15 @@ extension BrowserController {
         }
     }
 
-    /// Shows a story full screen above the feed.
-    private func showStory(_ url: URL) {
-        storyViewer?.close()
-        let viewer = StoryViewer(url: url, applicationName: webView.configuration.applicationNameForUserAgent)
-        viewer.webView.frame = webView.bounds
-        viewer.webView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        viewer.onClose = { [weak self, weak viewer] next in
-            self?.storyClosed(viewer, next: next)
-        }
-        webView.addSubview(viewer.webView)
-        storyViewer = viewer
-    }
-
-    /// Back on the feed: reload the tray for the seen rings, and open the next page if there is one.
-    private func storyClosed(_ viewer: StoryViewer?, next: URL?) {
-        if storyViewer === viewer {
-            storyViewer = nil
-        }
-        stories.load()
-        if let next {
-            openFromStories(next)
+    /// A story opened or closed in the strip. While it plays, the page below must not take swipes
+    /// (a swipe from the edge would go back in the feed's history) or VoiceOver.
+    private func storyChanged(_ showing: Bool) {
+        webView.allowsBackForwardNavigationGestures = !showing
+        webView.scrollView.accessibilityElementsHidden = showing
+        pageBackgroundChanged()
+        if !showing {
+            // The tray is back above the feed; place it again with a fresh layout.
+            applyStoriesSpace()
         }
     }
 
@@ -158,13 +149,10 @@ extension BrowserController {
         applyStoriesSpace()
     }
 
-    /// A story tapped in the tray opens above the feed. Another page opens in the main web view.
+    /// A link tapped in the strip (in the tray or in a story) opens in the main web view.
     private func openFromStories(_ url: URL) {
         switch RoutePolicy.decide(url, settings: settings, userTappedLink: true) {
-        case .allow where StoryViewer.isStory(url):
-            showStory(url)
         case .allow:
-            visitedStories = true
             load(url)
         case .redirect(let target):
             redirect(to: target)

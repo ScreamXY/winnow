@@ -44,6 +44,11 @@ enum StoriesPolicy {
         return path.isEmpty || path == "/"
     }
 
+    /// True for one person's stories (`/stories/<name>/…`). The strip plays them in place.
+    static func isStory(_ url: URL?) -> Bool {
+        instagramPath(url)?.hasPrefix("/stories/") ?? false
+    }
+
     /// The path of an `https` Instagram address, or nil for any other address.
     private static func instagramPath(_ url: URL?) -> String? {
         guard let url, url.scheme?.lowercased() == "https", let host = url.host()?.lowercased(),

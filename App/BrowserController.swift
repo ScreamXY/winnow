@@ -19,12 +19,11 @@ final class BrowserController: NSObject {
     @ObservationIgnored private(set) var settings: FilterSettings
     @ObservationIgnored var layout: FeedLayout?
     @ObservationIgnored let stories: StoriesStrip
-    /// True after a story opened from the tray, so the tray reloads (seen rings) on return.
+    /// True after a story opened in the main web view (for example from a profile), so the tray
+    /// reloads (seen rings) on return.
     @ObservationIgnored var visitedStories = false
     /// The page position when the finger touched down. A flick moves one post from here.
     @ObservationIgnored private var dragStartY: Double?
-    /// The story shown above the feed, if any.
-    @ObservationIgnored var storyViewer: StoryViewer?
     /// How often iOS ended the page's process (usually low memory) and the page loaded again.
     @ObservationIgnored private(set) var processTerminations = 0
     @ObservationIgnored private var redirectGuard = RedirectGuard()
@@ -41,14 +40,15 @@ final class BrowserController: NSObject {
     override init() {
         settings = FilterSettings(defaults: .standard)
         let configuration = WKWebViewConfiguration()
-        configuration.websiteDataStore = .default()
+        configuration.websiteDataStore = Fixture.websiteDataStore
         configuration.allowsInlineMediaPlayback = true
         configuration.mediaTypesRequiringUserActionForPlayback = []
         configuration.applicationNameForUserAgent = UserAgent.applicationName(
             isPad: UIDevice.current.userInterfaceIdiom == .pad,
             systemVersion: UIDevice.current.systemVersion)
         webView = WKWebView(frame: .zero, configuration: configuration)
-        stories = StoriesStrip(applicationName: configuration.applicationNameForUserAgent)
+        stories = StoriesStrip(
+            applicationName: configuration.applicationNameForUserAgent, dataStore: configuration.websiteDataStore)
         super.init()
         setUpStories()
 
@@ -78,9 +78,9 @@ final class BrowserController: NSObject {
                 self?.pageAddressChanged(webView.url)
             }
         }
-        backgroundObservation = webView.observe(\.underPageBackgroundColor, options: [.new]) { [weak self] webView, _ in
+        backgroundObservation = webView.observe(\.underPageBackgroundColor, options: [.new]) { [weak self] _, _ in
             MainActor.assumeIsolated {
-                self?.pageBackground = webView.underPageBackgroundColor
+                self?.pageBackgroundChanged()
             }
         }
         #if DEBUG
@@ -102,7 +102,7 @@ final class BrowserController: NSObject {
                 return
             }
         #endif
-        load(settings.forceFollowing ? RoutePolicy.followingFeed : RoutePolicy.home)
+        load(RoutePolicy.feed(for: settings))
     }
 
     func retry() {
@@ -148,6 +148,14 @@ final class BrowserController: NSObject {
             log.error("Page script is missing from the app bundle")
             return
         }
+        #if DEBUG
+            if let seeding = Fixture.seenPostsScript {
+                // In the page script's world and before it: only scripts in one world run in order.
+                content.addUserScript(
+                    WKUserScript(
+                        source: seeding, injectionTime: .atDocumentStart, forMainFrameOnly: true, in: .defaultClient))
+            }
+        #endif
         content.addUserScript(
             WKUserScript(source: script, injectionTime: .atDocumentStart, forMainFrameOnly: true, in: .defaultClient))
     }
@@ -163,6 +171,11 @@ final class BrowserController: NSObject {
             return nil
         }
         return "window.__winnowBoot = { config: \(settings.javaScriptLiteral()), css: \(styleLiteral) };\n" + script
+    }
+
+    /// The color behind the status bar: the page's, or black while a story covers the page.
+    func pageBackgroundChanged() {
+        pageBackground = stories.isShowingStory ? .black : webView.underPageBackgroundColor
     }
 
     // MARK: - Navigation
@@ -187,14 +200,16 @@ final class BrowserController: NSObject {
         storiesAddressChanged(url)
     }
 
-    /// Returns false if the redirect was skipped to stop a loop.
+    /// Returns false if the redirect was skipped to stop a loop. Goes back to the feed in the history.
     @discardableResult
     func redirect(to target: URL) -> Bool {
         guard redirectGuard.allowRedirect(at: .now) else {
             log.notice("Skipped redirect to \(target.absoluteString, privacy: .public) to stop a loop")
             return false
         }
-        load(target)
+        if target != RoutePolicy.feed(for: settings) || !goBackToFeed() {
+            load(target)
+        }
         return true
     }
 
@@ -378,7 +393,7 @@ extension BrowserController: UIScrollViewDelegate {
                 "flickLog": flickLog,
                 "processTerminations": processTerminations,
                 "stripProcessTerminations": stories.processTerminations,
-                "storyViewerOpen": storyViewer != nil,
+                "storyOpen": stories.isShowingStory,
             ]
         }
     }

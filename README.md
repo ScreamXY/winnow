@@ -14,17 +14,18 @@ Winnow is not made by, or connected to, Instagram or Meta.
 
 ## What it does
 
-| Instagram shows                                  | Winnow                                                                                                                                                                      |
-| ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| The "For you" feed when you open it              | Opens the **Following** feed. The Home tab and the logo also go there.                                                                                                      |
-| The Reels tab and the endless reels feed         | Hides the tab. If a link opens the reels feed, Winnow shows that one reel on its own page.                                                                                  |
-| No stories tray on the Following page            | Shows your **stories tray above the Following feed**. It comes from Instagram's home page, which loads in the background (switch: "Stories above the feed").                |
-| Reels from people you follow                     | **Kept.** They stay in your feed and play normally.                                                                                                                         |
-| The Explore grid                                 | Hides the grid. **Search still works.**                                                                                                                                     |
-| "Suggested for you" accounts and suggested posts | Hidden.                                                                                                                                                                     |
-| Push notifications about suggested reels         | None. Winnow has no push notifications at all (see limits).                                                                                                                 |
-| Sponsored posts                                  | Hidden. You can show them again in Settings.                                                                                                                                |
-| A feed that scrolls freely                       | **Flick mode**: one flick moves exactly one post, like the full-screen feed Instagram tested in 2022. Long posts still scroll, and a slow drag settles on the nearest post. |
+| Instagram shows                                  | Winnow                                                                                                                                                                                                     |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The "For you" feed when you open it              | Opens the **Following** feed. The Home tab and the logo go back to it at the place you left.                                                                                                               |
+| The Reels tab and the endless reels feed         | Hides the tab. If a link opens the reels feed, Winnow shows that one reel on its own page.                                                                                                                 |
+| No stories tray on the Following page            | Shows your **stories tray above the Following feed**. It comes from Instagram's home page, which loads in the background; a tapped story plays through like in the app (switch: "Stories above the feed"). |
+| Posts you already saw, again after every reload  | **Hides posts you scrolled past** the next time the feed loads, so it starts with new posts and goes on where you stopped (switch: "Hide posts I have seen").                                              |
+| Reels from people you follow                     | **Kept.** They stay in your feed and play normally.                                                                                                                                                        |
+| The Explore grid                                 | Hides the grid. **Search still works.**                                                                                                                                                                    |
+| "Suggested for you" accounts and suggested posts | Hidden.                                                                                                                                                                                                    |
+| Push notifications about suggested reels         | None. Winnow has no push notifications at all (see limits).                                                                                                                                                |
+| Sponsored posts                                  | Hidden. You can show them again in Settings.                                                                                                                                                               |
+| A feed that scrolls freely                       | **Flick mode**: one flick moves exactly one post, like the full-screen feed Instagram tested in 2022. Long posts still scroll, and a slow drag settles on the nearest post.                                |
 
 Messages, stories, profiles, comments, likes, search, posting and your account settings work like on
 instagram.com.
@@ -35,6 +36,7 @@ Open **Settings → Apps → Winnow**. Changes apply when you go back to Winnow.
 
 - Open the Following feed (on)
 - Flick mode (on)
+- Hide posts I have seen (on)
 - Hide: Reels tab and reels feed (on), Explore grid (on), Suggestions (on), Sponsored posts (on)
 
 ## How it works

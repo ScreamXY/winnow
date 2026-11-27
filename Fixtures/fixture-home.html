@@ -3,7 +3,9 @@
   Hand-written test page for Winnow's stories strip. It is NOT Instagram markup. It only has the
   parts that Web/stories.js looks for: a row of items labelled as stories near the top, above a
   feed with a fixed top bar, a video and posts. Like on Instagram, the row is wider than the screen
-  and scrolls sideways inside a box. Debug builds load it with `-WinnowFixture <name>`;
+  and scrolls sideways inside a box. Like Instagram, a tapped story opens a full-page viewer in
+  place (history.pushState to /stories/…), goes on to the next person, and goes back to "/" when
+  closed. Debug builds load it with `-WinnowFixture <name>`;
   Release builds do not contain it.
 -->
 <html lang="en">
@@ -65,6 +67,24 @@
         display: block;
         margin: 0 auto 4px;
       }
+      .viewer {
+        position: fixed;
+        inset: 0;
+        background: #000;
+        color: #fff;
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 24px;
+      }
+      .viewer.open {
+        display: flex;
+      }
+      .viewer button {
+        font-size: 17px;
+        padding: 12px 24px;
+      }
       article {
         height: 600px;
         background: #555;
@@ -77,7 +97,12 @@
     <main>
       <div class="tray">
         <div class="row">
-          <div class="story" role="button" aria-label="Story by tray_one, not seen">
+          <div
+            class="story"
+            role="button"
+            aria-label="Story by tray_one, not seen"
+            onclick="openStory('tray_one')"
+          >
             <canvas width="62" height="62"></canvas><span>tray_one</span>
           </div>
           <div class="story" role="button" aria-label="Story by tray_two, not seen">
@@ -115,11 +140,35 @@
           </div>
         </div>
       </div>
+      <div class="viewer" role="group" aria-label="Story viewer">
+        <span id="viewer-title"></span>
+        <button type="button" onclick="openStory('tray_two')">Next story</button>
+        <button type="button" onclick="closeStory()">Close story</button>
+      </div>
       <article>
         <span>For you post</span>
         <video muted playsinline loop></video>
       </article>
       <article><span>Another for you post</span></article>
     </main>
+    <script>
+      const viewer = document.querySelector('.viewer');
+      const showRoute = () => {
+        const match = /^\/stories\/([^/]+)\//.exec(location.pathname);
+        viewer.classList.toggle('open', !!match);
+        document.getElementById('viewer-title').textContent = match ? 'Story of ' + match[1] : '';
+      };
+      function openStory(name) {
+        history.pushState({}, '', '/stories/' + name + '/1/');
+        showRoute();
+      }
+      // Instagram goes back in the history. A page loaded from a string keeps no history entries in
+      // WebKit (history.length stays 1), so this page replaces the address instead.
+      function closeStory() {
+        history.replaceState({}, '', '/');
+        showRoute();
+      }
+      window.addEventListener('popstate', showRoute);
+    </script>
   </body>
 </html>
